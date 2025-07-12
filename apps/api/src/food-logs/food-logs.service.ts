@@ -4,6 +4,15 @@ import { CreateFoodLogDto } from './dto';
 
 @Injectable()
 export class FoodLogsService {
+  async remove(userId: string, id: string) {
+    // Solo permite eliminar si el registro pertenece al usuario
+    const log = await this.prisma.foodLog.findUnique({ where: { id } });
+    if (!log || log.userId !== userId) {
+      throw new NotFoundException('Registro de consumo no encontrado o no autorizado.');
+    }
+    await this.prisma.foodLog.delete({ where: { id } });
+    return { message: 'Registro de consumo eliminado correctamente.' };
+  }
   constructor(private readonly prisma: PrismaService) {}
 
   async create(createFoodLogDto: CreateFoodLogDto, userId: string) {

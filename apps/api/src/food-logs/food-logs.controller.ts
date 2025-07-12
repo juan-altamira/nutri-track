@@ -1,4 +1,4 @@
-import { Controller, Post, Body, UseGuards, Request, Get, Query } from '@nestjs/common';
+import { Controller, Post, Body, UseGuards, Request, Get, Query, Delete, Param } from '@nestjs/common';
 import { FoodLogsService } from './food-logs.service';
 import { CreateFoodLogDto } from './dto';
 import { AuthGuard } from '@nestjs/passport';
@@ -22,5 +22,10 @@ export class FoodLogsController {
   @Get('summary')
   getSummaryByDate(@GetUser('id') userId: string, @Query('date') date: string) {
     return this.foodLogsService.getSummaryByDate(userId, date);
+  }
+
+  @Delete(':id')
+  remove(@GetUser('id') userId: string, @Param('id') id: string) {
+    return this.foodLogsService.remove(userId, id);
   }
 }
