@@ -1,0 +1,14 @@
+{
+  "name": "nutri-track-monorepo",
+  "private": true,
+  "scripts": {
+    "dev:client": "pnpm --filter client dev",
+    "dev:api": "pnpm --filter api start:dev",
+    "build:client": "pnpm --filter client build",
+    "build:api": "pnpm --filter api build"
+  },
+  "devDependencies": {
+    "typescript": "^5.4.5",
+    "@types/node": "^20.11.30"
+  }
+}
