@@ -50,7 +50,7 @@
       <img 
         src="/imagen-para-el-login.png" 
         alt="Nutri-Track Logo" 
-        class="h-24 w-auto object-contain"
+        class="w-64 h-auto object-contain"
       />
     </div>
     
