@@ -28,6 +28,9 @@
 
     loading = false;
     if (signUpError) {
+      // Log del error real para debugging (quitar en producción)
+      console.error('[Signup Error]:', signUpError.message);
+      
       // Traducir mensajes de error al español
       if (signUpError.message.toLowerCase().includes('user already registered')) {
         error = 'Este correo electrónico ya está registrado';
@@ -35,8 +38,13 @@
         error = 'La contraseña debe tener al menos 6 caracteres';
       } else if (signUpError.message.toLowerCase().includes('invalid email')) {
         error = 'Correo electrónico inválido';
+      } else if (signUpError.message.toLowerCase().includes('email rate limit')) {
+        error = 'Demasiados intentos. Espera unos minutos e intenta nuevamente';
       } else {
-        error = 'Error al crear la cuenta. Por favor, intenta nuevamente';
+        // Mostrar el mensaje de Supabase en desarrollo
+        error = import.meta.env.DEV 
+          ? `Error: ${signUpError.message}` 
+          : 'Error al crear la cuenta. Por favor, intenta nuevamente';
       }
       return;
     }

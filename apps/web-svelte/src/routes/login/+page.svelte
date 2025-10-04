@@ -28,6 +28,9 @@
 
     loading = false;
     if (authError) {
+      // Log del error real para debugging (quitar en producción)
+      console.error('[Login Error]:', authError.message);
+      
       // Traducir mensajes de error al español
       if (authError.message.toLowerCase().includes('invalid login credentials')) {
         error = 'Correo electrónico o contraseña incorrectos';
@@ -35,8 +38,13 @@
         error = 'Por favor, confirma tu correo electrónico antes de iniciar sesión';
       } else if (authError.message.toLowerCase().includes('invalid email')) {
         error = 'Correo electrónico inválido';
+      } else if (authError.message.toLowerCase().includes('email rate limit')) {
+        error = 'Demasiados intentos. Espera unos minutos e intenta nuevamente';
       } else {
-        error = 'Error al iniciar sesión. Por favor, intenta nuevamente';
+        // Mostrar el mensaje de Supabase en desarrollo
+        error = import.meta.env.DEV 
+          ? `Error: ${authError.message}` 
+          : 'Error al iniciar sesión. Por favor, intenta nuevamente';
       }
     } else {
       goto('/dashboard');
