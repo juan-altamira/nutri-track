@@ -3,6 +3,7 @@
   import '../app.css'; // Tailwind global styles
   import theme from '$lib/stores/theme';
   import ToastHost from '$lib/components/ui/ToastHost.svelte';
+  import PWAInstallPrompt from '$lib/components/PWAInstallPrompt.svelte';
 
   let { children } = $props();
 
@@ -32,5 +33,6 @@
   </button>
 
   <ToastHost />
+  <PWAInstallPrompt />
   {@render children?.()}
 </div>
