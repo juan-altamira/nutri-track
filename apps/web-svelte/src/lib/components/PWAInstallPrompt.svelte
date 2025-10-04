@@ -8,7 +8,8 @@
   let debugInfo = $state('');
 
   // Modo de prueba: cambiar a true para ver el banner siempre (desarrollo)
-  const DEBUG_MODE = true;
+  // En producción, esto debe ser false para que solo se muestre cuando el navegador lo permita
+  const DEBUG_MODE = import.meta.env.DEV; // true en desarrollo, false en producción
 
   onMount(() => {
     console.log('[PWA] Iniciando componente de instalación...');
