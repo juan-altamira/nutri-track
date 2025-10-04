@@ -12,8 +12,13 @@
     error = null;
     success = false;
 
+    // Usar la URL de producción si está en Vercel, sino localhost
+    const baseUrl = import.meta.env.PROD 
+      ? 'https://seguimiento-nutricional.vercel.app'
+      : window.location.origin;
+
     const { error: resetError } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${window.location.origin}/update-password`,
+      redirectTo: `${baseUrl}/update-password`,
     });
 
     loading = false;
