@@ -1,31 +1,53 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   
-  let deferredPrompt: any = null;
+  let deferredPrompt = $state<any>(null);
   let showInstallButton = $state(false);
   let isInstalling = $state(false);
   let showBanner = $state(true);
+  let debugInfo = $state('');
+
+  // Modo de prueba: cambiar a true para ver el banner siempre (desarrollo)
+  const DEBUG_MODE = true;
 
   onMount(() => {
+    console.log('[PWA] Iniciando componente de instalación...');
+    
     // Detectar si la app ya está instalada
-    if (window.matchMedia('(display-mode: standalone)').matches) {
-      console.log('[PWA] App ya está instalada');
-      return;
+    const isStandalone = window.matchMedia('(display-mode: standalone)').matches;
+    const isIOSStandalone = (window.navigator as any).standalone === true;
+    
+    if (isStandalone || isIOSStandalone) {
+      console.log('[PWA] ✅ App ya está instalada');
+      debugInfo = 'App instalada';
+      if (!DEBUG_MODE) return;
     }
 
+    // Verificar soporte de Service Worker
+    if (!('serviceWorker' in navigator)) {
+      console.warn('[PWA] ⚠️ Service Worker no soportado');
+      debugInfo = 'Service Worker no soportado';
+    }
+
+    // Verificar si el evento beforeinstallprompt es soportado
+    let beforeinstallpromptSupported = false;
+    
     // Escuchar el evento beforeinstallprompt
     window.addEventListener('beforeinstallprompt', (e) => {
-      console.log('[PWA] beforeinstallprompt disparado');
+      console.log('[PWA] ✅ beforeinstallprompt disparado');
+      beforeinstallpromptSupported = true;
       e.preventDefault();
       deferredPrompt = e;
       showInstallButton = true;
+      debugInfo = 'Evento de instalación capturado';
     });
 
     // Escuchar cuando la app se instala
     window.addEventListener('appinstalled', () => {
-      console.log('[PWA] App instalada exitosamente');
+      console.log('[PWA] ✅ App instalada exitosamente');
       showInstallButton = false;
       deferredPrompt = null;
+      debugInfo = 'App instalada con éxito';
     });
 
     // Registrar el Service Worker
@@ -33,33 +55,68 @@
       navigator.serviceWorker
         .register('/sw.js')
         .then((registration) => {
-          console.log('[PWA] Service Worker registrado:', registration);
+          console.log('[PWA] ✅ Service Worker registrado:', registration);
         })
         .catch((error) => {
-          console.error('[PWA] Error registrando Service Worker:', error);
+          console.error('[PWA] ❌ Error registrando Service Worker:', error);
         });
     }
+
+    // Verificar después de 3 segundos si el evento se disparó
+    setTimeout(() => {
+      if (!beforeinstallpromptSupported && !isStandalone && !isIOSStandalone) {
+        console.warn('[PWA] ⚠️ beforeinstallprompt NO se disparó después de 3s');
+        console.log('[PWA] Posibles razones:');
+        console.log('  1. No cumple criterios de PWA (verifica Lighthouse)');
+        console.log('  2. Usuario ya instaló la app antes');
+        console.log('  3. Navegador no soporta instalación (Safari, Firefox)');
+        console.log('  4. manifest.json tiene errores');
+        console.log('[PWA] Mostrando banner en modo DEBUG');
+        debugInfo = 'Evento no disparado - Modo DEBUG activo';
+        
+        // En modo DEBUG, mostrar de todas formas
+        if (DEBUG_MODE) {
+          showInstallButton = true;
+        }
+      }
+    }, 3000);
+
+    // Log de información útil
+    console.log('[PWA] Información del navegador:');
+    console.log('  - User Agent:', navigator.userAgent);
+    console.log('  - Display Mode:', isStandalone ? 'standalone' : 'browser');
+    console.log('  - Service Worker:', 'serviceWorker' in navigator ? 'soportado' : 'NO soportado');
   });
 
   async function handleInstallClick() {
     if (!deferredPrompt) {
-      console.warn('[PWA] No hay prompt de instalación disponible');
+      console.warn('[PWA] ⚠️ No hay prompt de instalación disponible');
+      if (DEBUG_MODE) {
+        alert('⚠️ Modo DEBUG activado\n\nEl evento beforeinstallprompt no se disparó.\n\nEsto es normal en:\n- Firefox (no soporta instalación)\n- Safari desktop (no soporta instalación)\n- Si ya instalaste la app antes\n\nPara instalar en Chrome:\n1. Abre Chrome DevTools (F12)\n2. Application → Manifest\n3. Verifica errores\n4. En Chrome, busca el ícono ⊕ en la barra de direcciones\n\nEn iOS Safari:\nCompartir → Agregar a pantalla de inicio');
+      }
       return;
     }
 
     isInstalling = true;
 
-    // Mostrar el prompt de instalación
-    deferredPrompt.prompt();
+    try {
+      // Mostrar el prompt de instalación
+      deferredPrompt.prompt();
 
-    // Esperar la respuesta del usuario
-    const { outcome } = await deferredPrompt.userChoice;
-    console.log(`[PWA] Usuario respondió: ${outcome}`);
+      // Esperar la respuesta del usuario
+      const { outcome } = await deferredPrompt.userChoice;
+      console.log(`[PWA] Usuario respondió: ${outcome}`);
 
-    if (outcome === 'accepted') {
-      console.log('[PWA] Usuario aceptó instalar');
-    } else {
-      console.log('[PWA] Usuario rechazó instalar');
+      if (outcome === 'accepted') {
+        console.log('[PWA] ✅ Usuario aceptó instalar');
+        debugInfo = 'Instalando...';
+      } else {
+        console.log('[PWA] ❌ Usuario rechazó instalar');
+        debugInfo = 'Instalación cancelada';
+      }
+    } catch (error) {
+      console.error('[PWA] Error durante la instalación:', error);
+      debugInfo = 'Error en instalación';
     }
 
     deferredPrompt = null;
@@ -102,9 +159,15 @@
         <div class="flex-1 min-w-0">
           <h3 class="text-sm font-semibold text-gray-900 dark:text-gray-100">
             Instalar Nutri-Track
+            {#if DEBUG_MODE && !deferredPrompt}
+              <span class="ml-2 text-xs text-orange-600 dark:text-orange-400">(Modo DEBUG)</span>
+            {/if}
           </h3>
           <p class="text-xs text-gray-600 dark:text-gray-400 mt-0.5">
             Accede más rápido y úsala offline
+            {#if DEBUG_MODE && debugInfo}
+              <span class="block text-xs text-gray-500 dark:text-gray-500 mt-1">Debug: {debugInfo}</span>
+            {/if}
           </p>
         </div>
       </div>
