@@ -32,7 +32,7 @@
     }
 
     if (data.user && !data.session) {
-      message = 'Check your email to confirm your account, then sign in.';
+      message = 'Revisa tu correo electrónico para confirmar tu cuenta, luego inicia sesión.';
     } else {
       goto('/dashboard');
     }
@@ -40,12 +40,21 @@
 </script>
 
 <svelte:head>
-  <title>Sign up | Nutri-Track</title>
+  <title>Registro | Nutri-Track</title>
 </svelte:head>
 
 <div class="min-h-screen flex items-center justify-center px-4 bg-white text-gray-900 dark:bg-gray-900 dark:text-gray-100 transition-colors">
-  <form class="w-full max-w-sm space-y-4" on:submit={handleSubmit}>
-    <h1 class="text-2xl font-bold text-center">Create your account</h1>
+  <form class="w-full max-w-sm space-y-6" on:submit={handleSubmit}>
+    <!-- Logo -->
+    <div class="flex justify-center mb-6">
+      <img 
+        src="/imagen-para-el-login.png" 
+        alt="Nutri-Track Logo" 
+        class="h-24 w-auto object-contain"
+      />
+    </div>
+    
+    <h1 class="text-2xl font-bold text-center">Crear Cuenta</h1>
 
     {#if error}
       <p class="text-red-600 text-sm">{error}</p>
@@ -55,26 +64,26 @@
     {/if}
 
     <div>
-      <label class="block text-sm font-medium mb-1" for="email">Email</label>
+      <label class="block text-sm font-medium mb-1" for="email">Correo Electrónico</label>
       <input id="email" type="email" class="w-full border rounded px-3 py-2 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100" bind:value={email} required />
     </div>
 
     <div>
-      <label class="block text-sm font-medium mb-1" for="password">Password</label>
+      <label class="block text-sm font-medium mb-1" for="password">Contraseña</label>
       <input id="password" type="password" class="w-full border rounded px-3 py-2 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100" bind:value={password} required />
     </div>
 
     <button type="submit" class="w-full bg-blue-600 dark:bg-blue-500 text-white py-2 rounded" disabled={loading}>
       {#if loading}
-        Creating…
+        Creando cuenta…
       {:else}
-        Sign up
+        Registrarse
       {/if}
     </button>
 
     <p class="text-center text-sm text-gray-500">
-      Already have an account?
-      <a href="/login" class="text-blue-600 hover:underline">Sign in</a>
+      ¿Ya tienes una cuenta?
+      <a href="/login" class="text-blue-600 hover:underline">Iniciar sesión</a>
     </p>
   </form>
 </div>

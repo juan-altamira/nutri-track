@@ -1,5 +1,4 @@
 <script lang="ts">
-  import favicon from '$lib/assets/favicon.svg';
   import '../app.css'; // Tailwind global styles
   import theme from '$lib/stores/theme';
   import ToastHost from '$lib/components/ui/ToastHost.svelte';
@@ -14,7 +13,6 @@
 </script>
 
 <svelte:head>
-	<link rel="icon" href={favicon} />
   <meta name="google" content="notranslate" />
 </svelte:head>
 
