@@ -43,14 +43,14 @@
   <title>Registro | Nutri-Track</title>
 </svelte:head>
 
-<div class="min-h-screen flex items-center justify-center px-4 bg-white text-gray-900 dark:bg-gray-900 dark:text-gray-100 transition-colors">
+<div class="min-h-screen flex items-start justify-center px-4 pt-16 bg-white text-gray-900 dark:bg-gray-900 dark:text-gray-100 transition-colors">
   <form class="w-full max-w-sm space-y-6" on:submit={handleSubmit}>
     <!-- Logo -->
     <div class="flex justify-center mb-6">
       <img 
         src="/imagen-para-el-login.png" 
         alt="Nutri-Track Logo" 
-        class="w-64 h-auto object-contain"
+        class="w-[250px] h-auto object-contain"
       />
     </div>
     
