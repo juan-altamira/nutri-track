@@ -114,6 +114,9 @@ importers:
 
   apps/web-svelte:
     dependencies:
+      '@lemonsqueezy/lemonsqueezy.js':
+        specifier: ^4.0.0
+        version: 4.0.0
       '@supabase/supabase-js':
         specifier: ^2.50.5
         version: 2.50.5
@@ -680,6 +683,10 @@ packages:
 
   '@jridgewell/trace-mapping@0.3.29':
     resolution: {integrity: sha512-uw6guiW/gcAGPDhLmd77/6lW8QLeiV5RUTsAX46Db6oLhGaVj4lhnPwb184s1bkc8kdVg/+h988dro8GRDpmYQ==}
+
+  '@lemonsqueezy/lemonsqueezy.js@4.0.0':
+    resolution: {integrity: sha512-xcY1/lDrY7CpIF98WKiL1ElsfoVhddP7FT0fw7ssOzrFqQsr44HgolKrQZxd9SywsCPn12OTOUieqDIokI3mFg==}
+    engines: {node: '>=20'}
 
   '@napi-rs/wasm-runtime@0.2.12':
     resolution: {integrity: sha512-ZVWUcfwY4E/yPitQJl481FjFo3K22D6qF0DuFH6Y/nbnE11GY5uguDxZMGXPQ8WQ0128MXQD7TnfHyK4oWoIJQ==}
@@ -3685,6 +3692,8 @@ snapshots:
     dependencies:
       '@jridgewell/resolve-uri': 3.1.2
       '@jridgewell/sourcemap-codec': 1.5.4
+
+  '@lemonsqueezy/lemonsqueezy.js@4.0.0': {}
 
   '@napi-rs/wasm-runtime@0.2.12':
     dependencies:

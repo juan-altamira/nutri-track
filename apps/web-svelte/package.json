@@ -26,6 +26,7 @@
 		"vite": "^7.0.4"
 	},
 	"dependencies": {
+		"@lemonsqueezy/lemonsqueezy.js": "^4.0.0",
 		"@supabase/supabase-js": "^2.50.5"
 	}
 }
