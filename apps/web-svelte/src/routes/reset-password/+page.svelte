@@ -14,7 +14,7 @@
 
     // Usar la URL de producción si está en Vercel, sino localhost
     const baseUrl = import.meta.env.PROD 
-      ? 'https://seguimiento-nutricional.vercel.app'
+      ? 'https://www.nutri-track.pro'
       : window.location.origin;
 
     const { error: resetError } = await supabase.auth.resetPasswordForEmail(email, {
