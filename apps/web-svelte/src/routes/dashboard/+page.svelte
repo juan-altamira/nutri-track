@@ -196,7 +196,7 @@
                     </div>
                   </div>
                   <button
-                    class="sm:px-3 sm:py-1.5 sm:bg-red-600 sm:text-white sm:dark:bg-gray-700 sm:dark:text-red-500 sm:rounded-md sm:w-auto sm:h-auto sm:dark:hover:bg-gray-600 w-10 h-10 bg-gray-200 dark:bg-gray-700 rounded text-sm font-medium sm:hover:bg-red-500 hover:bg-gray-300 dark:hover:bg-gray-600 disabled:opacity-60 whitespace-nowrap flex-shrink-0 transition-colors flex items-center justify-center"
+                    class="sm:px-3 sm:py-1.5 sm:bg-red-600 sm:text-white sm:rounded-md sm:w-auto sm:h-auto sm:hover:bg-red-500 w-10 h-10 bg-gray-200 dark:bg-gray-700 rounded text-sm font-medium hover:bg-gray-300 dark:hover:bg-gray-600 disabled:opacity-60 whitespace-nowrap flex-shrink-0 transition-colors flex items-center justify-center"
                     onclick={() => deleteLog(log.id)}
                     disabled={deletingId === log.id}
                     aria-label="Eliminar alimento"
