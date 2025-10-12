@@ -58,27 +58,12 @@
     // Calcular calorías dinámicamente: proteínas y carbos = 4 kcal/g, grasas = 9 kcal/g
     const calculatedCalories = (protein * 4) + (carbs * 4) + (fat * 9);
     
-    // DEBUG: Log temporal para diagnosticar
-    console.log('[MACROS DEBUG]', {
-      food: food.name,
-      grams,
-      protein,
-      carbs,
-      fat,
-      calculatedCalories,
-      formula: `(${protein}*4) + (${carbs}*4) + (${fat}*9) = ${calculatedCalories}`
-    });
-    
-    const result = {
+    return {
       protein: protein.toFixed(1),
       carbs: carbs.toFixed(1),
       fat: fat.toFixed(1),
       calories: calculatedCalories.toFixed(0)
     };
-    
-    console.log('[MACROS RESULT]', result);
-    
-    return result;
   }
 
   function onInput(e: Event) {
@@ -239,10 +224,8 @@
     try {
       myFoodsLoading = true;
       myFoodsError = null;
-      const { data, error: err } = await supabase
-        .from('UserFood')
-        .select('id, name, protein, carbs, fat, calories')
-        .order('name', { ascending: true });
+      const { data, error: err } = await supabase.rpc('get_user_foods_with_macros');
+      
       if (err) {
         const msg = err?.message ?? '';
         const code = (err as any)?.code;
@@ -254,14 +237,15 @@
         }
         throw err;
       }
+      
       myFoods = (data || []).map((r: any) => ({ 
         id: String(r.id), 
         name: r.name, 
         source: 'user',
-        protein: r.protein,
-        carbs: r.carbs,
-        fat: r.fat,
-        calories: r.calories
+        protein: r.protein ? Number(r.protein) : undefined,
+        carbs: r.carbs ? Number(r.carbs) : undefined,
+        fat: r.fat ? Number(r.fat) : undefined,
+        calories: r.calories ? Number(r.calories) : undefined
       }));
     } catch (e: any) {
       myFoodsError = 'No se pudieron cargar tus alimentos';
@@ -391,7 +375,7 @@
                 <span>🥩 {macros.protein}g prot</span>
                 <span>🍞 {macros.carbs}g carbs</span>
                 <span>🥑 {macros.fat}g gras</span>
-                <span>🔥 {macros.calories} kcal [v2.1]</span>
+                <span>🔥 {macros.calories} kcal</span>
               </div>
             </div>
           </div>
