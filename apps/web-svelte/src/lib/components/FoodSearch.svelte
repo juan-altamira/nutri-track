@@ -5,7 +5,15 @@
   import { toasts } from '$lib/stores/toast';
   import { capitalize } from '$lib/utils/formatters';
 
-  type SearchItem = { id: string; name: string; source: 'global' | 'user' };
+  type SearchItem = { 
+    id: string; 
+    name: string; 
+    source: 'global' | 'user';
+    protein?: number;
+    carbs?: number;
+    fat?: number;
+    calories?: number;
+  };
 
   const dispatch = createEventDispatcher<{ added: void }>();
 
@@ -36,7 +44,20 @@
   let myFoodsError = $state<string | null>(null);
   let editFoodId = $state<string | null>(null);
 
-  const itemKey = (it: SearchItem) => `${it.source}:${it.id}`;
+  function itemKey(it: SearchItem) {
+    return `${it.source}:${it.id}`;
+  }
+
+  // Calcular macronutrientes basados en la cantidad de gramos
+  function calculateMacros(food: SearchItem, grams: number) {
+    const factor = grams / 100; // Los valores en BD son por 100g
+    return {
+      protein: ((food.protein ?? 0) * factor).toFixed(1),
+      carbs: ((food.carbs ?? 0) * factor).toFixed(1),
+      fat: ((food.fat ?? 0) * factor).toFixed(1),
+      calories: ((food.calories ?? 0) * factor).toFixed(0)
+    };
+  }
 
   function onInput(e: Event) {
     const target = e.target as HTMLInputElement;
@@ -74,18 +95,42 @@
 
       if (gRes.error) {
         // Si la función RPC no existe, usar búsqueda tradicional con ilike
-        const fallbackRes = await supabase.from('Food').select('id, name').ilike('name', `%${q}%`).limit(10);
+        const fallbackRes = await supabase.from('Food').select('id, name, protein, carbs, fat, calories').ilike('name', `%${q}%`).limit(10);
         if (fallbackRes.error) throw fallbackRes.error;
-        const globalItems: SearchItem[] = (fallbackRes.data || []).map((r: any) => ({ id: String(r.id), name: r.name, source: 'global' }));
+        const globalItems: SearchItem[] = (fallbackRes.data || []).map((r: any) => ({ 
+          id: String(r.id), 
+          name: r.name, 
+          source: 'global',
+          protein: r.protein,
+          carbs: r.carbs,
+          fat: r.fat,
+          calories: r.calories
+        }));
         
-        const fallbackUserRes = await supabase.from('UserFood').select('id, name').ilike('name', `%${q}%`).limit(10);
+        const fallbackUserRes = await supabase.from('UserFood').select('id, name, protein, carbs, fat, calories').ilike('name', `%${q}%`).limit(10);
         let userItems: SearchItem[] = [];
         if (!fallbackUserRes.error) {
-          userItems = (fallbackUserRes.data || []).map((r: any) => ({ id: String(r.id), name: r.name, source: 'user' }));
+          userItems = (fallbackUserRes.data || []).map((r: any) => ({ 
+            id: String(r.id), 
+            name: r.name, 
+            source: 'user',
+            protein: r.protein,
+            carbs: r.carbs,
+            fat: r.fat,
+            calories: r.calories
+          }));
         }
         results = [...userItems, ...globalItems];
       } else {
-        const globalItems: SearchItem[] = (gRes.data || []).map((r: any) => ({ id: String(r.id), name: r.name, source: 'global' }));
+        const globalItems: SearchItem[] = (gRes.data || []).map((r: any) => ({ 
+          id: String(r.id), 
+          name: r.name, 
+          source: 'global',
+          protein: r.protein,
+          carbs: r.carbs,
+          fat: r.fat,
+          calories: r.calories
+        }));
         let userItems: SearchItem[] = [];
         
         if (uRes.error) {
@@ -98,7 +143,15 @@
             throw uRes.error;
           }
         } else {
-          userItems = (uRes.data || []).map((r: any) => ({ id: String(r.id), name: r.name, source: 'user' }));
+          userItems = (uRes.data || []).map((r: any) => ({ 
+            id: String(r.id), 
+            name: r.name, 
+            source: 'user',
+            protein: r.protein,
+            carbs: r.carbs,
+            fat: r.fat,
+            calories: r.calories
+          }));
         }
         results = [...userItems, ...globalItems];
       }
@@ -166,7 +219,7 @@
       myFoodsError = null;
       const { data, error: err } = await supabase
         .from('UserFood')
-        .select('id, name')
+        .select('id, name, protein, carbs, fat, calories')
         .order('name', { ascending: true });
       if (err) {
         const msg = err?.message ?? '';
@@ -179,7 +232,15 @@
         }
         throw err;
       }
-      myFoods = (data || []).map((r: any) => ({ id: String(r.id), name: r.name, source: 'user' }));
+      myFoods = (data || []).map((r: any) => ({ 
+        id: String(r.id), 
+        name: r.name, 
+        source: 'user',
+        protein: r.protein,
+        carbs: r.carbs,
+        fat: r.fat,
+        calories: r.calories
+      }));
     } catch (e: any) {
       myFoodsError = 'No se pudieron cargar tus alimentos';
       toasts.error(myFoodsError);
@@ -295,30 +356,50 @@
   {/if}
 
   {#if results.length > 0}
-    <ul class="mt-3 space-y-2">
+    <ul class="mt-4 space-y-4">
       {#each results as food (food.source + ':' + food.id)}
-        <li class="flex items-center gap-2 flex-wrap">
-          <span class="flex-1 min-w-0 truncate">{capitalize(food.name)}</span>
-          <input
-            type="number"
-            min="1"
-            step="1"
-            class="w-20 sm:w-24 border rounded px-2 py-1 text-sm dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100"
-            value={gramsByKey[itemKey(food)] ?? 100}
-            oninput={(e) => {
-              const v = Number((e.currentTarget as HTMLInputElement).value);
-              const k = itemKey(food);
-              gramsByKey = { ...gramsByKey, [k]: isNaN(v) || v < 1 ? 1 : Math.round(v) };
-            }}
-            aria-label="Cantidad (g)"
-          />
-          <button
-            class="w-full sm:w-auto px-3 py-1.5 rounded bg-blue-600 text-white text-sm hover:bg-blue-500 disabled:opacity-60"
-            onclick={() => addItem(food)}
-            disabled={loading}
-          >
-            Añadir
-          </button>
+        {@const grams = gramsByKey[itemKey(food)] ?? 100}
+        {@const macros = calculateMacros(food, grams)}
+        <li class="p-4 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800">
+          <!-- Nombre del alimento y macros -->
+          <div class="flex items-start justify-between gap-3 mb-3">
+            <div class="flex-1 min-w-0">
+              <h3 class="font-semibold text-base truncate">{capitalize(food.name)}</h3>
+              <div class="flex flex-wrap gap-x-3 gap-y-1 mt-1 text-xs text-gray-600 dark:text-gray-400">
+                <span>🥩 {macros.protein}g prot</span>
+                <span>🍞 {macros.carbs}g carbs</span>
+                <span>🥑 {macros.fat}g gras</span>
+                <span>🔥 {macros.calories} kcal</span>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Input de cantidad y botón añadir -->
+          <div class="flex items-center gap-3">
+            <div class="relative flex-1">
+              <input
+                type="number"
+                min="1"
+                step="1"
+                placeholder="gramos"
+                class="w-full border-2 rounded-lg px-4 py-3 text-base font-medium dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                value={grams}
+                oninput={(e) => {
+                  const v = Number((e.currentTarget as HTMLInputElement).value);
+                  const k = itemKey(food);
+                  gramsByKey = { ...gramsByKey, [k]: isNaN(v) || v < 1 ? 1 : Math.round(v) };
+                }}
+                aria-label="Cantidad en gramos"
+              />
+            </div>
+            <button
+              class="px-6 py-3 rounded-lg bg-blue-600 text-white font-semibold text-base hover:bg-blue-500 disabled:opacity-60 whitespace-nowrap"
+              onclick={() => addItem(food)}
+              disabled={loading}
+            >
+              Añadir
+            </button>
+          </div>
         </li>
       {/each}
     </ul>
