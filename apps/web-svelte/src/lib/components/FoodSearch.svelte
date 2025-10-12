@@ -387,8 +387,8 @@
                 type="number"
                 min="1"
                 step="1"
-                placeholder="gramos"
-                class="w-full border-2 rounded-lg px-4 py-3 text-base font-medium dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                placeholder="100"
+                class="w-full border-2 rounded-lg px-4 py-3 pr-16 text-base font-medium dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 value={grams}
                 oninput={(e) => {
                   const v = Number((e.currentTarget as HTMLInputElement).value);
@@ -397,6 +397,7 @@
                 }}
                 aria-label="Cantidad en gramos"
               />
+              <span class="absolute right-4 top-1/2 -translate-y-1/2 text-sm text-gray-400 pointer-events-none">gramos</span>
             </div>
             <button
               class="px-6 py-3 rounded-lg bg-blue-600 text-white font-semibold text-base hover:bg-blue-500 disabled:opacity-60 whitespace-nowrap"

@@ -181,24 +181,34 @@
       {/if}
 
       <div class="mt-8">
-        <h2 class="text-xl font-semibold mb-2">Consumos de hoy</h2>
+        <h2 class="text-xl font-semibold mb-3">Consumos de hoy</h2>
         {#if (props.data.summary.foodLogs ?? []).length === 0}
           <p class="text-gray-500">Aún no registraste comidas hoy.</p>
         {:else}
-          <ul class="space-y-2">
+          <ul class="space-y-3">
             {#each props.data.summary.foodLogs as log (log.id)}
-              <li class="flex items-center justify-between gap-3 border-b border-gray-100 dark:border-gray-800 py-2 flex-wrap">
-                <div class="min-w-0">
-                  <div class="font-medium truncate">{capitalize(log.UserFood?.name ?? log.Food?.name ?? 'Alimento')}</div>
-                  <div class="text-sm text-gray-600 dark:text-gray-400">{log.quantity} g</div>
+              <li class="p-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800">
+                <div class="flex items-start justify-between gap-3">
+                  <div class="flex-1 min-w-0">
+                    <div class="font-semibold text-base truncate mb-1">{capitalize(log.UserFood?.name ?? log.Food?.name ?? 'Alimento')}</div>
+                    <div class="text-sm text-gray-600 dark:text-gray-400">
+                      <span class="font-medium">{log.quantity} gramos</span>
+                    </div>
+                  </div>
+                  <button
+                    class="px-3 py-1.5 rounded-md bg-red-600 text-white text-sm font-medium hover:bg-red-500 disabled:opacity-60 whitespace-nowrap flex-shrink-0"
+                    onclick={() => deleteLog(log.id)}
+                    disabled={deletingId === log.id}
+                    aria-label="Eliminar alimento"
+                  >
+                    {#if deletingId === log.id}
+                      <span class="inline-block">🗑️</span>
+                    {:else}
+                      <span class="hidden sm:inline">Eliminar</span>
+                      <span class="sm:hidden">🗑️</span>
+                    {/if}
+                  </button>
                 </div>
-                <button
-                  class="w-full sm:w-auto mt-2 sm:mt-0 px-3 py-1.5 rounded bg-red-600 text-white text-sm hover:bg-red-500 disabled:opacity-60"
-                  onclick={() => deleteLog(log.id)}
-                  disabled={deletingId === log.id}
-                >
-                  {#if deletingId === log.id}Eliminando…{:else}Eliminar{/if}
-                </button>
               </li>
             {/each}
           </ul>
