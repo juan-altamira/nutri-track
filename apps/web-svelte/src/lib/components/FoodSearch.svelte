@@ -3,6 +3,7 @@
   import { createEventDispatcher } from 'svelte';
   import UserFoodForm from '$lib/components/UserFoodForm.svelte';
   import { toasts } from '$lib/stores/toast';
+  import { capitalize } from '$lib/utils/formatters';
 
   type SearchItem = { id: string; name: string; source: 'global' | 'user' };
 
@@ -248,7 +249,7 @@
         <ul class="space-y-1">
           {#each myFoods as f (f.source + ':' + f.id)}
             <li class="flex items-center justify-between gap-2">
-              <span class="truncate">{f.name}</span>
+              <span class="truncate">{capitalize(f.name)}</span>
               <div class="flex items-center gap-2">
                 <button class="px-2 py-1 text-xs rounded bg-gray-200 text-gray-900 hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-100 dark:hover:bg-gray-600" onclick={() => startEditUserFood(f)}>Editar</button>
                 <button class="px-2 py-1 text-xs rounded bg-red-600 text-white hover:bg-red-500" onclick={() => deleteUserFood(f)}>Eliminar</button>
@@ -297,7 +298,7 @@
     <ul class="mt-3 space-y-2">
       {#each results as food (food.source + ':' + food.id)}
         <li class="flex items-center gap-2 flex-wrap">
-          <span class="flex-1 min-w-0 truncate">{food.name}</span>
+          <span class="flex-1 min-w-0 truncate">{capitalize(food.name)}</span>
           <input
             type="number"
             min="1"

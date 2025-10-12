@@ -6,6 +6,7 @@
   import FoodSearch from '$lib/components/FoodSearch.svelte';
   import ProfileSelector from '$lib/components/ProfileSelector.svelte';
   import { toasts } from '$lib/stores/toast';
+  import { capitalize } from '$lib/utils/formatters';
 
   const props = $props();
   let deletingId = $state<string | null>(null);
@@ -188,7 +189,7 @@
             {#each props.data.summary.foodLogs as log (log.id)}
               <li class="flex items-center justify-between gap-3 border-b border-gray-100 dark:border-gray-800 py-2 flex-wrap">
                 <div class="min-w-0">
-                  <div class="font-medium truncate">{log.UserFood?.name ?? log.Food?.name ?? 'Alimento'}</div>
+                  <div class="font-medium truncate">{capitalize(log.UserFood?.name ?? log.Food?.name ?? 'Alimento')}</div>
                   <div class="text-sm text-gray-600 dark:text-gray-400">{log.quantity} g</div>
                 </div>
                 <button
