@@ -51,11 +51,18 @@
   // Calcular macronutrientes basados en la cantidad de gramos
   function calculateMacros(food: SearchItem, grams: number) {
     const factor = grams / 100; // Los valores en BD son por 100g
+    const protein = (food.protein ?? 0) * factor;
+    const carbs = (food.carbs ?? 0) * factor;
+    const fat = (food.fat ?? 0) * factor;
+    
+    // Calcular calorías dinámicamente: proteínas y carbos = 4 kcal/g, grasas = 9 kcal/g
+    const calculatedCalories = (protein * 4) + (carbs * 4) + (fat * 9);
+    
     return {
-      protein: ((food.protein ?? 0) * factor).toFixed(1),
-      carbs: ((food.carbs ?? 0) * factor).toFixed(1),
-      fat: ((food.fat ?? 0) * factor).toFixed(1),
-      calories: ((food.calories ?? 0) * factor).toFixed(0)
+      protein: protein.toFixed(1),
+      carbs: carbs.toFixed(1),
+      fat: fat.toFixed(1),
+      calories: calculatedCalories.toFixed(0)
     };
   }
 
