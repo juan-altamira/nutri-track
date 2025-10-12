@@ -58,6 +58,17 @@
     // Calcular calorías dinámicamente: proteínas y carbos = 4 kcal/g, grasas = 9 kcal/g
     const calculatedCalories = (protein * 4) + (carbs * 4) + (fat * 9);
     
+    // DEBUG: Log temporal para diagnosticar
+    console.log('[MACROS DEBUG]', {
+      food: food.name,
+      grams,
+      protein,
+      carbs,
+      fat,
+      calculatedCalories,
+      formula: `(${protein}*4) + (${carbs}*4) + (${fat}*9) = ${calculatedCalories}`
+    });
+    
     return {
       protein: protein.toFixed(1),
       carbs: carbs.toFixed(1),
