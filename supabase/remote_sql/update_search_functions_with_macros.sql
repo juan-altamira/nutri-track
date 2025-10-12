@@ -24,10 +24,10 @@ BEGIN
     MAX(CASE WHEN fn.nutrient = 'protein' THEN fn.value ELSE NULL END) as protein,
     MAX(CASE WHEN fn.nutrient = 'carbohydrates' THEN fn.value ELSE NULL END) as carbs,
     MAX(CASE WHEN fn.nutrient = 'fat' THEN fn.value ELSE NULL END) as fat,
-    MAX(CASE WHEN fn.nutrient = 'calories' THEN fn.value ELSE NULL END) as calories
+    NULL::NUMERIC as calories -- Calorías se calculan en el frontend
   FROM public."Food" f
   LEFT JOIN public."FoodNutrient" fn ON f.id = fn."foodId" 
-    AND fn.nutrient IN ('protein', 'carbohydrates', 'fat', 'calories')
+    AND fn.nutrient IN ('protein', 'carbohydrates', 'fat')
   WHERE public.normalize_text(f.name) LIKE '%' || public.normalize_text(search_term) || '%'
   GROUP BY f.id, f.name
   ORDER BY f.name
@@ -61,10 +61,10 @@ BEGIN
     MAX(CASE WHEN ufn.nutrient = 'protein' THEN ufn.value ELSE NULL END) as protein,
     MAX(CASE WHEN ufn.nutrient = 'carbohydrates' THEN ufn.value ELSE NULL END) as carbs,
     MAX(CASE WHEN ufn.nutrient = 'fat' THEN ufn.value ELSE NULL END) as fat,
-    MAX(CASE WHEN ufn.nutrient = 'calories' THEN ufn.value ELSE NULL END) as calories
+    NULL::NUMERIC as calories -- Calorías se calculan en el frontend
   FROM public."UserFood" uf
   LEFT JOIN public."UserFoodNutrient" ufn ON uf.id = ufn."userFoodId" 
-    AND ufn.nutrient IN ('protein', 'carbohydrates', 'fat', 'calories')
+    AND ufn.nutrient IN ('protein', 'carbohydrates', 'fat')
   WHERE public.normalize_text(uf.name) LIKE '%' || public.normalize_text(search_term) || '%'
   GROUP BY uf.id, uf.name
   ORDER BY uf.name
