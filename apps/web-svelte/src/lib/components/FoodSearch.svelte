@@ -69,12 +69,16 @@
       formula: `(${protein}*4) + (${carbs}*4) + (${fat}*9) = ${calculatedCalories}`
     });
     
-    return {
+    const result = {
       protein: protein.toFixed(1),
       carbs: carbs.toFixed(1),
       fat: fat.toFixed(1),
       calories: calculatedCalories.toFixed(0)
     };
+    
+    console.log('[MACROS RESULT]', result);
+    
+    return result;
   }
 
   function onInput(e: Event) {
