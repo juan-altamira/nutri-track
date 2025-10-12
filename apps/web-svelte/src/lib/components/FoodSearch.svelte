@@ -391,7 +391,7 @@
                 <span>🥩 {macros.protein}g prot</span>
                 <span>🍞 {macros.carbs}g carbs</span>
                 <span>🥑 {macros.fat}g gras</span>
-                <span>🔥 {macros.calories} kcal</span>
+                <span>🔥 {macros.calories} kcal [v2.1]</span>
               </div>
             </div>
           </div>
