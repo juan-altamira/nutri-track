@@ -136,7 +136,7 @@
   <title>Panel principal | Nutri-Track</title>
 </svelte:head>
 
-<div class="p-4 max-w-3xl mx-auto bg-white text-gray-900 dark:bg-gray-900 dark:text-gray-100 transition-colors">
+<div class="p-4 pb-20 max-w-3xl mx-auto bg-white text-gray-900 dark:bg-gray-900 dark:text-gray-100 transition-colors">
   <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 sm:gap-5 mb-6">
     <h1 class="text-xl sm:text-2xl font-bold">Resumen diario</h1>
     <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-5 sm:gap-4 w-full sm:w-auto">
@@ -196,7 +196,7 @@
                     </div>
                   </div>
                   <button
-                    class="sm:px-3 sm:py-1.5 sm:bg-red-600 sm:text-white sm:rounded-md px-2 py-2 bg-gray-200 dark:bg-gray-700 rounded text-sm font-medium sm:hover:bg-red-500 hover:bg-gray-300 dark:hover:bg-gray-600 disabled:opacity-60 whitespace-nowrap flex-shrink-0 transition-colors"
+                    class="sm:px-3 sm:py-1.5 sm:bg-red-600 sm:text-white sm:rounded-md sm:w-auto sm:h-auto w-10 h-10 bg-gray-200 dark:bg-gray-700 rounded text-sm font-medium sm:hover:bg-red-500 hover:bg-gray-300 dark:hover:bg-gray-600 disabled:opacity-60 whitespace-nowrap flex-shrink-0 transition-colors flex items-center justify-center"
                     onclick={() => deleteLog(log.id)}
                     disabled={deletingId === log.id}
                     aria-label="Eliminar alimento"
