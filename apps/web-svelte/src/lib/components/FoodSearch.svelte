@@ -123,10 +123,10 @@
           id: String(r.id), 
           name: r.name, 
           source: 'global',
-          protein: r.protein,
-          carbs: r.carbs,
-          fat: r.fat,
-          calories: r.calories
+          protein: r.protein ? Number(r.protein) : undefined,
+          carbs: r.carbs ? Number(r.carbs) : undefined,
+          fat: r.fat ? Number(r.fat) : undefined,
+          calories: r.calories ? Number(r.calories) : undefined
         }));
         
         const fallbackUserRes = await supabase.from('UserFood').select('id, name, protein, carbs, fat, calories').ilike('name', `%${q}%`).limit(10);
@@ -136,10 +136,10 @@
             id: String(r.id), 
             name: r.name, 
             source: 'user',
-            protein: r.protein,
-            carbs: r.carbs,
-            fat: r.fat,
-            calories: r.calories
+            protein: r.protein ? Number(r.protein) : undefined,
+            carbs: r.carbs ? Number(r.carbs) : undefined,
+            fat: r.fat ? Number(r.fat) : undefined,
+            calories: r.calories ? Number(r.calories) : undefined
           }));
         }
         results = [...userItems, ...globalItems];
@@ -148,10 +148,10 @@
           id: String(r.id), 
           name: r.name, 
           source: 'global',
-          protein: r.protein,
-          carbs: r.carbs,
-          fat: r.fat,
-          calories: r.calories
+          protein: r.protein ? Number(r.protein) : undefined,
+          carbs: r.carbs ? Number(r.carbs) : undefined,
+          fat: r.fat ? Number(r.fat) : undefined,
+          calories: r.calories ? Number(r.calories) : undefined
         }));
         let userItems: SearchItem[] = [];
         
@@ -169,10 +169,10 @@
             id: String(r.id), 
             name: r.name, 
             source: 'user',
-            protein: r.protein,
-            carbs: r.carbs,
-            fat: r.fat,
-            calories: r.calories
+            protein: r.protein ? Number(r.protein) : undefined,
+            carbs: r.carbs ? Number(r.carbs) : undefined,
+            fat: r.fat ? Number(r.fat) : undefined,
+            calories: r.calories ? Number(r.calories) : undefined
           }));
         }
         results = [...userItems, ...globalItems];
