@@ -196,16 +196,16 @@
                     </div>
                   </div>
                   <button
-                    class="px-3 py-1.5 rounded-md bg-red-600 text-white text-sm font-medium hover:bg-red-500 disabled:opacity-60 whitespace-nowrap flex-shrink-0"
+                    class="sm:px-3 sm:py-1.5 sm:bg-red-600 sm:text-white sm:rounded-md px-2 py-2 bg-gray-200 dark:bg-gray-700 rounded text-sm font-medium sm:hover:bg-red-500 hover:bg-gray-300 dark:hover:bg-gray-600 disabled:opacity-60 whitespace-nowrap flex-shrink-0 transition-colors"
                     onclick={() => deleteLog(log.id)}
                     disabled={deletingId === log.id}
                     aria-label="Eliminar alimento"
                   >
                     {#if deletingId === log.id}
-                      <span class="inline-block">🗑️</span>
+                      <span class="inline-block text-xs">⏳</span>
                     {:else}
                       <span class="hidden sm:inline">Eliminar</span>
-                      <span class="sm:hidden">🗑️</span>
+                      <span class="sm:hidden text-xl font-bold leading-none text-red-600 dark:text-red-500">×</span>
                     {/if}
                   </button>
                 </div>
