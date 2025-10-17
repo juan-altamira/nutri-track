@@ -44,10 +44,8 @@
       } else if (signUpError.message.toLowerCase().includes('email rate limit')) {
         error = 'Demasiados intentos. Espera unos minutos e intenta nuevamente';
       } else {
-        // Mostrar el mensaje de Supabase en desarrollo
-        error = import.meta.env.DEV 
-          ? `Error: ${signUpError.message}` 
-          : 'Error al crear la cuenta. Por favor, intenta nuevamente';
+        // Mostrar el mensaje de Supabase siempre para diagnosticar
+        error = `Error: ${signUpError.message}`;
       }
       return;
     }
