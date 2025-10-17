@@ -23,7 +23,10 @@
 
     const { data, error: signUpError } = await supabase.auth.signUp({
       email,
-      password
+      password,
+      options: {
+        emailRedirectTo: `${window.location.origin}/auth/callback?next=/subscription`,
+      },
     });
 
     loading = false;

@@ -17,9 +17,16 @@
   let subscription = $state<Subscription | null>(null);
   let loading = $state(true);
   let checkoutLoading = $state(false);
-  let userId = $state<string>(data.session.user.id);
+  let userId = $state<string | null>(null);
 
   onMount(async () => {
+    // Si no hay sesión, redirigir a login
+    if (!data.session) {
+      window.location.href = '/login?returnUrl=/subscription';
+      return;
+    }
+    
+    userId = data.session.user.id;
     await loadSubscription();
   });
 
