@@ -1,6 +1,7 @@
 <script lang="ts">
   import { supabase } from '$lib/supabaseClient';
   import { goto } from '$app/navigation';
+  import { page } from '$app/stores';
   import { onMount } from 'svelte';
 
   let email = $state('');
@@ -8,12 +9,15 @@
   let loading = $state(false);
   let error = $state<string | null>(null);
   let showPassword = $state(false);
+  
+  // Obtener returnUrl de query params
+  let returnUrl = $derived($page.url.searchParams.get('returnUrl') || '/dashboard');
 
   onMount(async () => {
-    // Si ya hay sesión, redirige directo al dashboard
+    // Si ya hay sesión, redirige directo al returnUrl o dashboard
     const { data: { session } } = await supabase.auth.getSession();
     if (session) {
-      goto('/dashboard');
+      goto(returnUrl);
     }
   });
 
@@ -47,7 +51,7 @@
           : 'Error al iniciar sesión. Por favor, intenta nuevamente';
       }
     } else {
-      goto('/dashboard');
+      goto(returnUrl);
     }
   }
 
