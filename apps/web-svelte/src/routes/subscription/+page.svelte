@@ -2,7 +2,7 @@
   import { supabase } from '$lib/supabaseClient';
   import { onMount } from 'svelte';
   import { toasts } from '$lib/stores/toast';
-  import { goto } from '$app/navigation';
+  import type { PageData } from './$types';
 
   type Subscription = {
     id: string;
@@ -12,27 +12,21 @@
     trialEndsAt: string | null;
   };
 
+  let { data }: { data: PageData } = $props();
+  
   let subscription = $state<Subscription | null>(null);
   let loading = $state(true);
   let checkoutLoading = $state(false);
-  let userId = $state<string | null>(null);
+  let userId = $state<string>(data.session.user.id);
 
   onMount(async () => {
-    const { data: { session } } = await supabase.auth.getSession();
-    
-    if (!session) {
-      goto('/login');
-      return;
-    }
-
-    userId = session.user.id;
     await loadSubscription();
   });
 
   async function loadSubscription() {
     try {
       loading = true;
-      const { data, error } = await supabase
+      const { data: subData, error } = await supabase
         .from('Subscription')
         .select('*')
         .eq('userId', userId)
@@ -42,7 +36,7 @@
         throw error;
       }
 
-      subscription = data;
+      subscription = subData;
     } catch (err: any) {
       console.error('[Subscription] Load error:', err);
       toasts.error('Error al cargar suscripción');
@@ -57,16 +51,19 @@
 
       const response = await fetch('/api/checkout', {
         method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
       });
 
-      const data = await response.json();
+      const responseData = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || 'Error al crear checkout');
+        throw new Error(responseData.error || 'Error al crear checkout');
       }
 
       // Redirigir al checkout de Lemon Squeezy
-      window.location.href = data.checkoutUrl;
+      window.location.href = responseData.checkoutUrl;
     } catch (err: any) {
       console.error('[Subscription] Subscribe error:', err);
       toasts.error(err.message || 'Error al iniciar suscripción');

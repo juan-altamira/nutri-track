@@ -4,11 +4,16 @@ import { createCheckout } from '$lib/lemonsqueezy';
 
 export const POST: RequestHandler = async ({ locals }) => {
   try {
+    console.log('[Checkout] Iniciando...');
+    
     // Obtener sesión del usuario
     const { session } = await locals.safeGetSession();
+    
+    console.log('[Checkout] Session:', session ? 'existe' : 'null');
 
     if (!session) {
-      return json({ error: 'Unauthorized' }, { status: 401 });
+      console.error('[Checkout] No hay sesión válida');
+      return json({ error: 'No estás autenticado. Por favor, iniciá sesión.' }, { status: 401 });
     }
 
     const userId = session.user.id;
