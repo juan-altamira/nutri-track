@@ -25,7 +25,7 @@
       email,
       password,
       options: {
-        emailRedirectTo: `${window.location.origin}/auth/callback?next=/subscription`,
+        emailRedirectTo: `${window.location.origin}/auth/callback`,
       },
     });
 
