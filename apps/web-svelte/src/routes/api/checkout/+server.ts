@@ -1,25 +1,11 @@
 import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import { createCheckout } from '$lib/lemonsqueezy';
-import { createClient } from '@supabase/supabase-js';
-import { PUBLIC_SUPABASE_URL, PUBLIC_SUPABASE_ANON_KEY } from '$env/static/public';
 
-export const POST: RequestHandler = async ({ request, cookies }) => {
+export const POST: RequestHandler = async ({ locals }) => {
   try {
-    // Crear cliente de Supabase con el token de sesión
-    const accessToken = cookies.get('sb-access-token');
-    const refreshToken = cookies.get('sb-refresh-token');
-
-    const supabase = createClient(PUBLIC_SUPABASE_URL, PUBLIC_SUPABASE_ANON_KEY, {
-      global: {
-        headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : {},
-      },
-    });
-
-    // Verificar que el usuario esté autenticado
-    const {
-      data: { session },
-    } = await supabase.auth.getSession();
+    // Obtener sesión del usuario
+    const { session } = await locals.safeGetSession();
 
     if (!session) {
       return json({ error: 'Unauthorized' }, { status: 401 });
@@ -34,7 +20,7 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
     }
 
     // Verificar si el usuario ya tiene o tuvo una suscripción (limita trial a una vez)
-    const { data: existingSub } = await supabase
+    const { data: existingSub } = await locals.supabase
       .from('Subscription')
       .select('*')
       .eq('userId', userId)
