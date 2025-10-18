@@ -27,9 +27,20 @@ export const POST: RequestHandler = async ({ request, locals }) => {
       .single();
 
     console.log('[Cancel Subscription] Subscription found:', subscription ? 'sí' : 'no');
+    console.log('[Cancel Subscription] Query error:', subError);
 
     if (subError || !subscription) {
-      return json({ error: 'Subscription not found' }, { status: 404 });
+      console.error('[Cancel Subscription] Error detallado:', {
+        subError,
+        subscriptionId,
+        userId,
+        errorCode: subError?.code,
+        errorMessage: subError?.message,
+      });
+      return json({ 
+        error: 'Subscription not found',
+        details: subError?.message || 'No se encontró la suscripción',
+      }, { status: 404 });
     }
 
     // Cancelar en Lemon Squeezy

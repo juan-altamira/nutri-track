@@ -95,7 +95,17 @@
   }
 
   async function handleCancelSubscription() {
-    if (!subscription || !userId) return;
+    if (!subscription || !userId) {
+      console.error('[Cancel] Faltan datos:', { subscription, userId });
+      toasts.error('Faltan datos para cancelar. Recargá la página.');
+      return;
+    }
+
+    console.log('[Cancel] Datos completos:', {
+      subscriptionId: subscription.id,
+      userId: userId,
+      subscription: subscription,
+    });
 
     const confirmed = confirm(
       '¿Estás seguro que deseas cancelar tu suscripción? Perderás acceso a las funcionalidades premium al finalizar el período actual.'
@@ -105,7 +115,10 @@
 
     try {
       canceling = true;
-      console.log('[Cancel] Cancelando suscripción:', subscription.id);
+      console.log('[Cancel] Enviando request con:', { 
+        subscriptionId: subscription.id,
+        userId: userId,
+      });
       
       const response = await fetch('/api/subscription/cancel', {
         method: 'POST',
