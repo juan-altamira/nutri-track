@@ -42,6 +42,13 @@
 
       subscription = subData;
       console.log('[Subscription] Final subscription:', subscription);
+      
+      // Si no hay suscripción, redirigir a la página de planes
+      if (!subData) {
+        console.log('[Subscription] No hay suscripción, redirigiendo a /subscription');
+        goto('/subscription');
+        return;
+      }
     } catch (err: any) {
       console.error('[Subscription] Load error:', err);
       toasts.error('Error al cargar suscripción');
