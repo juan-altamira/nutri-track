@@ -1,8 +1,16 @@
 import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
-import { LEMON_SQUEEZY_API_KEY } from '$env/static/private';
+import { createClient } from '@supabase/supabase-js';
+import { LEMON_SQUEEZY_API_KEY, SUPABASE_SERVICE_ROLE_KEY } from '$env/static/private';
+import { PUBLIC_SUPABASE_URL } from '$env/static/public';
 
 const LEMONSQUEEZY_API_URL = 'https://api.lemonsqueezy.com/v1';
+
+// Cliente de Supabase con privilegios de servicio (bypasea RLS)
+const supabaseAdmin = createClient(
+  PUBLIC_SUPABASE_URL,
+  SUPABASE_SERVICE_ROLE_KEY
+);
 
 export const POST: RequestHandler = async ({ request, locals }) => {
   try {
@@ -18,8 +26,8 @@ export const POST: RequestHandler = async ({ request, locals }) => {
       return json({ error: 'Datos incompletos' }, { status: 400 });
     }
 
-    // Primero buscar por userId para ver qué suscripciones tiene
-    const { data: allUserSubs, error: allSubsError } = await locals.supabase
+    // Primero buscar por userId para ver qué suscripciones tiene (usando admin client)
+    const { data: allUserSubs, error: allSubsError } = await supabaseAdmin
       .from('Subscription')
       .select('id, userId, status')
       .eq('userId', userId);
@@ -29,8 +37,8 @@ export const POST: RequestHandler = async ({ request, locals }) => {
       subs: allUserSubs,
     });
 
-    // Ahora buscar la suscripción específica por ID
-    const { data: subscriptions, error: subError } = await locals.supabase
+    // Ahora buscar la suscripción específica por ID (usando admin client)
+    const { data: subscriptions, error: subError } = await supabaseAdmin
       .from('Subscription')
       .select('*')
       .eq('id', subscriptionId);
@@ -107,9 +115,9 @@ export const POST: RequestHandler = async ({ request, locals }) => {
     const result = await response.json();
     console.log('[Cancel Subscription] LS Result:', result.data.attributes);
 
-    // Actualizar en nuestra base de datos
+    // Actualizar en nuestra base de datos (usando admin client)
     console.log('[Cancel Subscription] Actualizando DB...');
-    const { error: updateError } = await locals.supabase
+    const { error: updateError } = await supabaseAdmin
       .from('Subscription')
       .update({
         status: 'cancelled',
