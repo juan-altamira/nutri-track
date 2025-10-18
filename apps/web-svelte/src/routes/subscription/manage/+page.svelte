@@ -152,11 +152,12 @@
   }
 
   function handleManagePayment() {
-    if (!subscription?.updatePaymentMethodUrl) {
+    const url = (subscription as any)?.updatePaymentMethodUrl;
+    if (!url) {
       toasts.error('No se encontró URL de gestión de pago');
       return;
     }
-    window.open(subscription.updatePaymentMethodUrl, '_blank');
+    window.open(url, '_blank');
   }
 </script>
 
@@ -245,7 +246,7 @@
         <!-- Acciones -->
         <div class="space-y-3">
           {#if ['active', 'on_trial'].includes(subscription.status)}
-            {#if subscription.updatePaymentMethodUrl}
+            {#if (subscription as any).updatePaymentMethodUrl}
               <button
                 onclick={handleManagePayment}
                 class="w-full bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-900 dark:text-gray-100 px-4 py-3 rounded-lg font-medium transition-colors"

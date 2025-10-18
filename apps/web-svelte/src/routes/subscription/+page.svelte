@@ -255,15 +255,32 @@
         </div>
       {/if}
 
-      <div class="pt-4">
-        <a
-          href="https://app.lemonsqueezy.com/my-orders"
-          target="_blank"
-          rel="noopener noreferrer"
-          class="inline-block px-4 py-2 rounded-md bg-blue-600 text-white hover:bg-blue-500 transition-colors"
-        >
-          Gestionar suscripción →
-        </a>
+      <div class="pt-4 space-y-3">
+        {#if ['active', 'on_trial'].includes(subscription.status)}
+          <!-- Suscripción activa: gestionar en Lemon Squeezy -->
+          {#if (subscription as any).updatePaymentMethodUrl}
+            <a
+              href={(subscription as any).updatePaymentMethodUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              class="inline-block px-4 py-2 rounded-md bg-blue-600 text-white hover:bg-blue-500 transition-colors"
+            >
+              Gestionar suscripción →
+            </a>
+          {/if}
+        {:else if ['cancelled', 'expired'].includes(subscription.status)}
+          <!-- Suscripción cancelada/expirada: crear nueva -->
+          <button
+            onclick={handleSubscribe}
+            disabled={checkoutLoading}
+            class="inline-block px-6 py-3 rounded-md bg-blue-600 text-white hover:bg-blue-500 disabled:opacity-60 disabled:cursor-not-allowed transition-colors font-semibold"
+          >
+            {checkoutLoading ? 'Cargando...' : 'Reactivar Suscripción →'}
+          </button>
+          <p class="text-sm text-gray-600 dark:text-gray-400">
+            Nota: La prueba gratuita solo está disponible una vez. Tu nueva suscripción comenzará inmediatamente.
+          </p>
+        {/if}
       </div>
     </div>
   {:else}
