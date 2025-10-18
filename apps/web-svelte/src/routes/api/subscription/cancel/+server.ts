@@ -32,7 +32,7 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 
     // Cancelar en Lemon Squeezy
     const response = await fetch(
-      `${LEMONSQUEEZY_API_URL}/subscriptions/${subscription.lemonSqueezyId}`,
+      `${LEMONSQUEEZY_API_URL}/subscriptions/${subscription.lemonsqueezySubscriptionId}`,
       {
         method: 'DELETE',
         headers: {

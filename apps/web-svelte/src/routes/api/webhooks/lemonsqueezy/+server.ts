@@ -1,14 +1,14 @@
 import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import { createClient } from '@supabase/supabase-js';
-import { LEMON_SQUEEZY_WEBHOOK_SECRET } from '$env/static/private';
+import { LEMON_SQUEEZY_WEBHOOK_SECRET, SUPABASE_SERVICE_ROLE_KEY } from '$env/static/private';
 import { PUBLIC_SUPABASE_URL } from '$env/static/public';
 import crypto from 'crypto';
 
 // Cliente de Supabase con privilegios de servicio
 const supabaseAdmin = createClient(
   PUBLIC_SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_ROLE_KEY || ''
+  SUPABASE_SERVICE_ROLE_KEY
 );
 
 // Verificar firma del webhook
@@ -62,7 +62,10 @@ export const POST: RequestHandler = async ({ request }) => {
       renewsAt: attributes.renews_at ? new Date(attributes.renews_at).toISOString() : null,
       endsAt: attributes.ends_at ? new Date(attributes.ends_at).toISOString() : null,
       trialEndsAt: attributes.trial_ends_at ? new Date(attributes.trial_ends_at).toISOString() : null,
+      updatePaymentMethodUrl: attributes.urls?.update_payment_method || null,
     };
+
+    console.log('[Webhook] Subscription data:', JSON.stringify(subscriptionData, null, 2));
 
     switch (eventName) {
       case 'subscription_created':
