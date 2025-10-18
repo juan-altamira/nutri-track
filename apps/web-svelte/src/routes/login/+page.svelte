@@ -14,11 +14,12 @@
   let returnUrl = $derived($page.url.searchParams.get('returnUrl') || '/dashboard');
 
   onMount(async () => {
-    // Si ya hay sesión, redirigir a /subscription que se encargará de verificar
+    // Verificar sesión pero NO redirigir automáticamente para evitar loops
     const { data: { session } } = await supabase.auth.getSession();
     if (session) {
-      console.log('[Login onMount] Ya hay sesión, redirigiendo a /subscription');
-      window.location.href = '/subscription';
+      console.log('[Login onMount] Ya hay sesión detectada');
+      // NO redirigir, dejar que el usuario decida ir al dashboard manualmente
+      // o que el login exitoso lo redirija
     }
   });
 
@@ -67,14 +68,13 @@
           : 'Error al iniciar sesión. Por favor, intenta nuevamente';
       }
     } else {
-      // Login exitoso - redirigir a /subscription que se encargará de verificar
-      console.log('[Login] Login exitoso, redirigiendo a /subscription');
+      // Login exitoso - redirigir al returnUrl (dashboard por defecto)
+      console.log('[Login] Login exitoso, redirigiendo a:', returnUrl);
       
       // Esperar 500ms para que las cookies se propaguen
       await new Promise(resolve => setTimeout(resolve, 500));
       
-      console.log('[Login] Redirigiendo a /subscription');
-      window.location.href = '/subscription';
+      window.location.href = returnUrl;
     }
   }
 

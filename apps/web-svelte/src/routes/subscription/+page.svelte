@@ -20,13 +20,16 @@
   let userId = $state<string | null>(null);
 
   onMount(async () => {
-    // Si no hay sesión, redirigir a login
-    if (!data.session) {
+    // Verificar sesión del lado del cliente (más confiable que SSR)
+    const { data: { session } } = await supabase.auth.getSession();
+    
+    if (!session) {
+      console.log('[Subscription] No hay sesión, redirigiendo a login');
       window.location.href = '/login?returnUrl=/subscription';
       return;
     }
     
-    userId = data.session.user.id;
+    userId = session.user.id;
     await loadSubscription();
   });
 
@@ -44,14 +47,6 @@
       }
 
       subscription = subData;
-      
-      // Si el usuario tiene suscripción activa, redirigir al dashboard
-      if (subscription && ['active', 'on_trial'].includes(subscription.status)) {
-        console.log('[Subscription] Usuario con suscripción activa, redirigiendo a dashboard');
-        loading = false; // Dejar de mostrar "Cargando..."
-        window.location.href = '/dashboard';
-        return; // No continuar
-      }
     } catch (err: any) {
       console.error('[Subscription] Load error:', err);
       toasts.error('Error al cargar suscripción');
