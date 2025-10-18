@@ -22,15 +22,30 @@
   });
 
   async function handleSubmit(e?: Event) {
+    console.log('[Login] handleSubmit llamado');
+    console.log('[Login] Email:', email);
+    console.log('[Login] Password length:', password?.length);
+    
     if (e) e.preventDefault();
+    
+    if (!email || !password) {
+      console.error('[Login] Email o password vacíos');
+      error = 'Por favor, completa todos los campos';
+      return;
+    }
+    
     loading = true;
     error = null;
+    
+    console.log('[Login] Intentando login con Supabase...');
     const { error: authError } = await supabase.auth.signInWithPassword({
       email,
       password
     });
 
     loading = false;
+    console.log('[Login] Respuesta de Supabase:', authError ? 'ERROR' : 'ÉXITO');
+    
     if (authError) {
       // Log del error real para debugging (quitar en producción)
       console.error('[Login Error]:', authError.message);
