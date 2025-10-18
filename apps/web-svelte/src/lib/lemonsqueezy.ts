@@ -21,7 +21,7 @@ export async function createCheckout(options: CreateCheckoutOptions) {
       attributes: {
         checkout_data: {
           email: userEmail,
-          name: userName || '',
+          name: userName || userEmail.split('@')[0] || 'Usuario',
           custom: {
             user_id: userId, // Este es crítico para el webhook
           },

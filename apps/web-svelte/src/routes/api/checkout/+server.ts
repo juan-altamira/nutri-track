@@ -18,7 +18,7 @@ export const POST: RequestHandler = async ({ locals }) => {
 
     const userId = session.user.id;
     const userEmail = session.user.email;
-    const userName = session.user.user_metadata?.name || '';
+    const userName = String(session.user.user_metadata?.name || session.user.email?.split('@')[0] || 'Usuario');
 
     if (!userEmail) {
       return json({ error: 'User email not found' }, { status: 400 });
