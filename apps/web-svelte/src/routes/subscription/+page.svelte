@@ -118,19 +118,11 @@
 </svelte:head>
 
 <div class="min-h-screen p-4 max-w-2xl mx-auto">
-  {#if subscription && ['active', 'on_trial'].includes(subscription.status)}
-    <div class="mb-6">
-      <a href="/dashboard" class="text-blue-600 dark:text-blue-400 hover:underline">
-        ← Volver al dashboard
-      </a>
-    </div>
-  {:else if !loading}
-    <div class="mb-6">
-      <a href="/logout" class="text-gray-600 dark:text-gray-400 hover:underline">
-        ← Cerrar sesión
-      </a>
-    </div>
-  {/if}
+  <div class="mb-6">
+    <a href="/dashboard" class="text-blue-600 dark:text-blue-400 hover:underline">
+      ← Volver al dashboard
+    </a>
+  </div>
 
   <h1 class="text-3xl font-bold mb-6">Mi Suscripción</h1>
 
@@ -201,23 +193,6 @@
     </div>
   {:else}
     <!-- Usuario NO tiene suscripción -->
-    <!-- Mensaje de advertencia -->
-    <div class="mb-6 p-4 rounded-lg bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800">
-      <div class="flex items-start gap-3">
-        <svg class="w-6 h-6 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-        </svg>
-        <div>
-          <p class="font-semibold text-blue-900 dark:text-blue-100 mb-1">
-            Suscripción requerida
-          </p>
-          <p class="text-sm text-blue-800 dark:text-blue-200">
-            Para acceder al dashboard y todas las funcionalidades de Nutri-Track, necesitás una suscripción activa.
-          </p>
-        </div>
-      </div>
-    </div>
-
     <div class="p-6 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 space-y-6">
       <div>
         <h2 class="text-2xl font-bold mb-2">Nutri-Track Premium</h2>

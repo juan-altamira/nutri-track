@@ -3,7 +3,6 @@
   import { goto } from '$app/navigation';
   import { onMount } from 'svelte';
   import { toasts } from '$lib/stores/toast';
-  import { requireSubscription } from '$lib/utils/authGuard';
 
   let age: number | '' = '';
   let sex: 'MALE' | 'FEMALE' | '' = '';
@@ -33,12 +32,12 @@
       if (d && /^\d{4}-\d{2}-\d{2}$/.test(d)) returnDate = d;
     } catch { /* noop */ }
 
-    // Verificar autenticación y suscripción
-    const hasAccess = await requireSubscription();
-    if (!hasAccess) return;
-
+    // Verificar sesión
     const { data: { session } } = await supabase.auth.getSession();
-    if (!session) return;
+    if (!session) {
+      goto('/login');
+      return;
+    }
 
     const { data, error: err } = await supabase
       .from('profiles')

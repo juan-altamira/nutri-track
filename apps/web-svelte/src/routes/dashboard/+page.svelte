@@ -7,7 +7,6 @@
   import ProfileSelector from '$lib/components/ProfileSelector.svelte';
   import { toasts } from '$lib/stores/toast';
   import { capitalize } from '$lib/utils/formatters';
-  import { requireSubscription } from '$lib/utils/authGuard';
 
   const props = $props();
   let deletingId = $state<string | null>(null);
@@ -94,9 +93,6 @@
   };
 
   onMount(() => {
-    // Verificar autenticación de forma asíncrona
-    requireSubscription();
-
     // Configurar listeners
     const handleStorage = (event: StorageEvent) => {
       if (event.key === 'activeProfileId') {

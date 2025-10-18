@@ -5,8 +5,8 @@
 
 const sw = /** @type {ServiceWorkerGlobalScope} */ (/** @type {unknown} */ (self));
 
-const CACHE_NAME = 'nutri-track-v2';
-const STATIC_CACHE = 'nutri-track-static-v2';
+const CACHE_NAME = 'nutri-track-v3';
+const STATIC_CACHE = 'nutri-track-static-v3';
 
 // Archivos estáticos críticos para cachear
 const STATIC_ASSETS = [

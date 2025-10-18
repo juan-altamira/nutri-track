@@ -3,7 +3,6 @@
   import { onMount } from 'svelte';
   import { tick } from 'svelte';
   import { toasts } from '$lib/stores/toast';
-  import { requireSubscription } from '$lib/utils/authGuard';
 
   type Sex = 'MALE' | 'FEMALE';
   type Profile = { id: string; name: string; age: number; sex: Sex; macroProtein: number | null; macroCarbs: number | null; macroFat: number | null };
@@ -495,7 +494,6 @@
   }
 
   onMount(async () => {
-    requireSubscription();
     await loadProfiles();
     // Estado inicial explícito: Paso 1 y sin edición
     isEdit = false;
