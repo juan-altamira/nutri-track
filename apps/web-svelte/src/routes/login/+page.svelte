@@ -66,7 +66,12 @@
           : 'Error al iniciar sesión. Por favor, intenta nuevamente';
       }
     } else {
-      // Login exitoso - forzar recarga completa para que las cookies se propaguen
+      // Login exitoso - esperar un momento para que las cookies se guarden
+      console.log('[Login] Login exitoso, esperando cookies...');
+      
+      // Esperar 500ms para que las cookies se propaguen
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
       console.log('[Login] Redirigiendo a:', returnUrl);
       window.location.href = returnUrl;
     }
