@@ -26,6 +26,24 @@ export async function createCheckout(options: CreateCheckoutOptions) {
             user_id: userId, // Este es crítico para el webhook
           },
         },
+        checkout_options: {
+          embed: false,
+          media: false,
+          logo: true,
+          desc: true,
+          discount: true,
+          dark: false,
+          subscription_preview: true,
+          button_color: '#003366',
+        },
+        product_options: {
+          enabled_variants: [PUBLIC_LEMON_SQUEEZY_VARIANT_ID],
+          redirect_url: 'https://www.nutri-track.pro/subscription/success',
+          receipt_button_text: 'Ir a Nutri-Track',
+          receipt_link_url: 'https://www.nutri-track.pro/dashboard',
+          receipt_thank_you_note: '¡Gracias por suscribirte a Nutri-Track!',
+        },
+        expires_at: null,
       },
       relationships: {
         store: {

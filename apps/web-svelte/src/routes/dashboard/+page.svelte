@@ -155,10 +155,10 @@
         Gestionar perfiles
       </a>
       <a
-        href="/subscription"
+        href="/subscription/manage"
         class="w-full sm:w-auto inline-flex justify-center items-center px-3 py-2 rounded-md bg-purple-600 text-white text-sm font-medium shadow-sm hover:bg-purple-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900 text-center whitespace-nowrap mt-2 sm:mt-0"
       >
-        ⭐ Suscripción
+        ⭐ Mi Suscripción
       </a>
       <button
         class="w-full sm:w-auto px-3 py-2 rounded-md bg-red-600 text-white hover:bg-red-500 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900 mt-2 sm:mt-0"
