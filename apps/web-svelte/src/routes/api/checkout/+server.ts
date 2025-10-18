@@ -2,26 +2,19 @@ import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import { createCheckout } from '$lib/lemonsqueezy';
 
-export const POST: RequestHandler = async ({ locals }) => {
+export const POST: RequestHandler = async ({ locals, request }) => {
   try {
     console.log('[Checkout] Iniciando...');
     
-    // Obtener sesión del usuario
-    const { session } = await locals.safeGetSession();
+    // Obtener datos del body (enviados por el cliente)
+    const body = await request.json();
+    const { userId, userEmail, userName } = body;
     
-    console.log('[Checkout] Session:', session ? 'existe' : 'null');
+    console.log('[Checkout] User data:', { userId, userEmail, userName });
 
-    if (!session) {
-      console.error('[Checkout] No hay sesión válida');
-      return json({ error: 'No estás autenticado. Por favor, iniciá sesión.' }, { status: 401 });
-    }
-
-    const userId = session.user.id;
-    const userEmail = session.user.email;
-    const userName = String(session.user.user_metadata?.name || session.user.email?.split('@')[0] || 'Usuario');
-
-    if (!userEmail) {
-      return json({ error: 'User email not found' }, { status: 400 });
+    if (!userId || !userEmail) {
+      console.error('[Checkout] Datos de usuario incompletos');
+      return json({ error: 'Datos de usuario incompletos' }, { status: 400 });
     }
 
     // Verificar si el usuario ya tiene o tuvo una suscripción (limita trial a una vez)

@@ -59,11 +59,24 @@
     try {
       checkoutLoading = true;
 
+      // Obtener el access token del cliente
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session) {
+        throw new Error('No hay sesión activa. Por favor, recargá la página.');
+      }
+
       const response = await fetch('/api/checkout', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`,
         },
+        body: JSON.stringify({
+          userId: session.user.id,
+          userEmail: session.user.email,
+          userName: session.user.user_metadata?.name || session.user.email?.split('@')[0] || 'Usuario',
+        }),
       });
 
       const responseData = await response.json();
