@@ -229,7 +229,7 @@
 
       <div class="border-t border-gray-200 dark:border-gray-700 pt-6">
         <div class="mb-4">
-          <p class="text-3xl font-bold mb-1">USD 14.99/mes</p>
+          <p class="text-3xl font-bold mb-1">USD 9,90/mes</p>
           <p class="text-sm text-gray-600 dark:text-gray-400">
             14 días de prueba gratuita · Cancela cuando quieras
           </p>
