@@ -1,12 +1,47 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
   import { toasts } from '$lib/stores/toast';
+  import { supabase } from '$lib/supabaseClient';
+  import { onMount } from 'svelte';
   import type { PageData } from './$types';
 
   let { data }: { data: PageData } = $props();
   let canceling = $state(false);
-  
-  const subscription = data.subscription;
+  let loading = $state(true);
+  let subscription = $state<any>(null);
+  let userId = $state<string | null>(null);
+
+  onMount(async () => {
+    // Verificar sesión del lado del cliente
+    const { data: { session } } = await supabase.auth.getSession();
+    
+    if (!session) {
+      goto('/login?returnUrl=/subscription/manage');
+      return;
+    }
+
+    userId = session.user.id;
+
+    // Cargar suscripción
+    try {
+      const { data: subData, error } = await supabase
+        .from('Subscription')
+        .select('*')
+        .eq('userId', userId)
+        .single();
+
+      if (error && error.code !== 'PGRST116') { // PGRST116 = no rows
+        throw error;
+      }
+
+      subscription = subData;
+    } catch (err: any) {
+      console.error('[Subscription] Load error:', err);
+      toasts.error('Error al cargar suscripción');
+    } finally {
+      loading = false;
+    }
+  });
 
   function getStatusText(status: string): string {
     const statusMap: Record<string, string> = {
@@ -108,7 +143,13 @@
 
     <h1 class="text-3xl font-bold mb-8 text-gray-900 dark:text-gray-100">Mi Suscripción</h1>
 
-    {#if !subscription}
+    {#if loading}
+      <!-- Cargando -->
+      <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-8 text-center">
+        <div class="text-4xl mb-4">⏳</div>
+        <p class="text-gray-600 dark:text-gray-400">Cargando suscripción...</p>
+      </div>
+    {:else if !subscription}
       <!-- Usuario sin suscripción -->
       <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-8 text-center">
         <div class="text-6xl mb-4">📦</div>
