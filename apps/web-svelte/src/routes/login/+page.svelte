@@ -66,7 +66,9 @@
           : 'Error al iniciar sesión. Por favor, intenta nuevamente';
       }
     } else {
-      goto(returnUrl);
+      // Login exitoso - forzar recarga completa para que las cookies se propaguen
+      console.log('[Login] Redirigiendo a:', returnUrl);
+      window.location.href = returnUrl;
     }
   }
 
