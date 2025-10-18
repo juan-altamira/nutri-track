@@ -6,16 +6,16 @@ const LEMONSQUEEZY_API_URL = 'https://api.lemonsqueezy.com/v1';
 
 export const POST: RequestHandler = async ({ request, locals }) => {
   try {
-    const { session } = await locals.safeGetSession();
+    console.log('[Cancel Subscription] Iniciando...');
+    
+    const body = await request.json();
+    const { subscriptionId, userId } = body;
 
-    if (!session) {
-      return json({ error: 'Unauthorized' }, { status: 401 });
-    }
+    console.log('[Cancel Subscription] Body:', { subscriptionId, userId });
 
-    const { subscriptionId } = await request.json();
-
-    if (!subscriptionId) {
-      return json({ error: 'Subscription ID required' }, { status: 400 });
+    if (!subscriptionId || !userId) {
+      console.error('[Cancel Subscription] Datos incompletos');
+      return json({ error: 'Datos incompletos' }, { status: 400 });
     }
 
     // Verificar que la suscripción pertenece al usuario
@@ -23,14 +23,19 @@ export const POST: RequestHandler = async ({ request, locals }) => {
       .from('Subscription')
       .select('*')
       .eq('id', subscriptionId)
-      .eq('userId', session.user.id)
+      .eq('userId', userId)
       .single();
+
+    console.log('[Cancel Subscription] Subscription found:', subscription ? 'sí' : 'no');
 
     if (subError || !subscription) {
       return json({ error: 'Subscription not found' }, { status: 404 });
     }
 
     // Cancelar en Lemon Squeezy
+    console.log('[Cancel Subscription] Llamando a Lemon Squeezy API...');
+    console.log('[Cancel Subscription] LS Subscription ID:', subscription.lemonsqueezySubscriptionId);
+    
     const response = await fetch(
       `${LEMONSQUEEZY_API_URL}/subscriptions/${subscription.lemonsqueezySubscriptionId}`,
       {
@@ -43,15 +48,19 @@ export const POST: RequestHandler = async ({ request, locals }) => {
       }
     );
 
+    console.log('[Cancel Subscription] LS Response status:', response.status);
+
     if (!response.ok) {
       const error = await response.text();
       console.error('[Cancel Subscription] Lemon Squeezy error:', error);
-      throw new Error('Failed to cancel subscription in Lemon Squeezy');
+      throw new Error('Error al cancelar en Lemon Squeezy: ' + error);
     }
 
     const result = await response.json();
+    console.log('[Cancel Subscription] LS Result:', result.data.attributes);
 
     // Actualizar en nuestra base de datos
+    console.log('[Cancel Subscription] Actualizando DB...');
     const { error: updateError } = await locals.supabase
       .from('Subscription')
       .update({
@@ -63,9 +72,14 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 
     if (updateError) {
       console.error('[Cancel Subscription] Database update error:', updateError);
+      // No fallar si la DB update falla - el webhook lo actualizará
     }
 
-    return json({ success: true });
+    console.log('[Cancel Subscription] Completado exitosamente');
+    return json({ 
+      success: true,
+      endsAt: result.data.attributes.ends_at,
+    });
   } catch (err: any) {
     console.error('[Cancel Subscription] Error:', err);
     return json(

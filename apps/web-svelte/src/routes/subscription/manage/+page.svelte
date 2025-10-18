@@ -95,7 +95,7 @@
   }
 
   async function handleCancelSubscription() {
-    if (!subscription) return;
+    if (!subscription || !userId) return;
 
     const confirmed = confirm(
       '¿Estás seguro que deseas cancelar tu suscripción? Perderás acceso a las funcionalidades premium al finalizar el período actual.'
@@ -105,14 +105,22 @@
 
     try {
       canceling = true;
+      console.log('[Cancel] Cancelando suscripción:', subscription.id);
+      
       const response = await fetch('/api/subscription/cancel', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ subscriptionId: subscription.id }),
+        body: JSON.stringify({ 
+          subscriptionId: subscription.id,
+          userId: userId,
+        }),
       });
 
+      const result = await response.json();
+      console.log('[Cancel] Response:', result);
+
       if (!response.ok) {
-        throw new Error('Error al cancelar suscripción');
+        throw new Error(result.error || 'Error al cancelar suscripción');
       }
 
       toasts.success('Suscripción cancelada correctamente');
