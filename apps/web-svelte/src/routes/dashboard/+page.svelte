@@ -7,6 +7,7 @@
   import ProfileSelector from '$lib/components/ProfileSelector.svelte';
   import { toasts } from '$lib/stores/toast';
   import { capitalize } from '$lib/utils/formatters';
+  import { requireSubscription } from '$lib/utils/authGuard';
 
   const props = $props();
   let deletingId = $state<string | null>(null);
@@ -92,7 +93,11 @@
     } catch {}
   };
 
-  onMount(() => {
+  onMount(async () => {
+    // Verificar suscripción primero
+    const hasAccess = await requireSubscription();
+    if (!hasAccess) return; // Se redirigió, no continuar
+
     // Configurar listeners
     const handleStorage = (event: StorageEvent) => {
       if (event.key === 'activeProfileId') {

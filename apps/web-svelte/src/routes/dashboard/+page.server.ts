@@ -1,27 +1,4 @@
-import { redirect } from '@sveltejs/kit';
-import type { PageServerLoad } from './$types';
-
-export const load: PageServerLoad = async ({ locals }) => {
-  const { session } = await locals.safeGetSession();
-
-  // Si no hay sesión, redirigir a login
-  if (!session) {
-    throw redirect(303, '/login?returnUrl=/dashboard');
-  }
-
-  // Verificar suscripción
-  const { data: subscription } = await locals.supabase
-    .from('Subscription')
-    .select('status')
-    .eq('userId', session.user.id)
-    .single();
-
-  // Si no tiene suscripción activa, redirigir a página de suscripción
-  if (!subscription || !['active', 'on_trial'].includes(subscription.status)) {
-    throw redirect(303, '/subscription');
-  }
-
-  return {
-    session,
-  };
+// No hacer verificación SSR - se hará del lado del cliente
+export const load = async () => {
+  return {};
 };

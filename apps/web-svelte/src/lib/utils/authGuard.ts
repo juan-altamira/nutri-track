@@ -5,6 +5,7 @@ import { browser } from '$app/environment';
 /**
  * Verifica que el usuario esté autenticado y tenga una suscripción activa.
  * Redirige a login o subscription si no cumple los requisitos.
+ * Debe ser llamado en onMount() de las páginas protegidas.
  * @returns true si el usuario tiene acceso, false si fue redirigido
  */
 export async function requireSubscription(): Promise<boolean> {
@@ -16,13 +17,13 @@ export async function requireSubscription(): Promise<boolean> {
     
     if (sessionError) {
       console.error('[Auth Guard] Error al obtener sesión:', sessionError);
-      goto('/login');
+      window.location.href = '/login';
       return false;
     }
     
     if (!session) {
       console.log('[Auth Guard] No hay sesión, redirigiendo a login');
-      goto('/login');
+      window.location.href = '/login';
       return false;
     }
 
@@ -35,19 +36,14 @@ export async function requireSubscription(): Promise<boolean> {
       .eq('userId', session.user.id)
       .single();
 
-    if (subError) {
-      // Si hay error de query (no solo "no encontrado"), loguear
-      if (subError.code !== 'PGRST116') {
-        console.error('[Auth Guard] Error al verificar suscripción:', subError);
-      } else {
-        console.log('[Auth Guard] No se encontró suscripción');
-      }
+    if (subError && subError.code !== 'PGRST116') {
+      console.error('[Auth Guard] Error al verificar suscripción:', subError);
     }
 
     if (!subscription || !['active', 'on_trial'].includes(subscription.status)) {
-      console.log('[Auth Guard] Sin suscripción válida, redirigiendo a /subscription');
+      console.log('[Auth Guard] Sin suscripción válida');
       console.log('[Auth Guard] Status:', subscription?.status);
-      goto('/subscription');
+      window.location.href = '/subscription';
       return false;
     }
 
@@ -55,7 +51,7 @@ export async function requireSubscription(): Promise<boolean> {
     return true;
   } catch (error) {
     console.error('[Auth Guard] Error inesperado:', error);
-    // En caso de error, permitir acceso para no bloquear usuarios
-    return true;
+    window.location.href = '/subscription';
+    return false;
   }
 }
