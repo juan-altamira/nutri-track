@@ -5,8 +5,8 @@
 
 const sw = /** @type {ServiceWorkerGlobalScope} */ (/** @type {unknown} */ (self));
 
-const CACHE_NAME = 'nutri-track-v1';
-const STATIC_CACHE = 'nutri-track-static-v1';
+const CACHE_NAME = 'nutri-track-v2';
+const STATIC_CACHE = 'nutri-track-static-v2';
 
 // Archivos estáticos críticos para cachear
 const STATIC_ASSETS = [
@@ -52,6 +52,12 @@ sw.addEventListener('fetch', (event) => {
 
   // Ignorar solicitudes de extensiones del navegador
   if (url.protocol === 'chrome-extension:') return;
+
+  // NO cachear métodos POST, PUT, DELETE, PATCH, HEAD
+  // Solo cachear GET requests
+  if (request.method !== 'GET') {
+    return;
+  }
 
   // Estrategia: Network First con fallback a caché (para API de Supabase)
   if (url.hostname.includes('supabase.co')) {
