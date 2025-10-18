@@ -43,11 +43,14 @@ export const POST: RequestHandler = async ({ request }) => {
 
     // Extraer información de la suscripción
     const attributes = data?.attributes;
-    const customData = attributes?.custom_data || {};
+    const customData = meta?.custom_data || {};
     const userId = customData.user_id;
 
+    console.log('[Webhook] Custom data:', customData);
+    console.log('[Webhook] User ID:', userId);
+
     if (!userId) {
-      console.error('[Webhook] No user_id in custom_data');
+      console.error('[Webhook] No user_id in meta.custom_data');
       return json({ error: 'Missing user_id' }, { status: 400 });
     }
 
