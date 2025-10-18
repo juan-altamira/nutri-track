@@ -48,8 +48,11 @@ export const POST: RequestHandler = async ({ locals }) => {
     });
 
     return json({ checkoutUrl });
-  } catch (err) {
+  } catch (err: any) {
     console.error('[Checkout] Error:', err);
-    return json({ error: 'Failed to create checkout' }, { status: 500 });
+    return json({ 
+      error: err?.message || 'Failed to create checkout',
+      details: err?.toString(),
+    }, { status: 500 });
   }
 };
