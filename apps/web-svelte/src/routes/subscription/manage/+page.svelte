@@ -131,9 +131,15 @@
 
       const result = await response.json();
       console.log('[Cancel] Response:', result);
+      
+      if (result.debug) {
+        console.log('[Cancel] DEBUG INFO:', result.debug);
+      }
 
       if (!response.ok) {
-        throw new Error(result.error || 'Error al cancelar suscripción');
+        const errorMsg = result.error || 'Error al cancelar suscripción';
+        console.error('[Cancel] Error completo:', { error: errorMsg, debug: result.debug });
+        throw new Error(errorMsg);
       }
 
       toasts.success('Suscripción cancelada correctamente');

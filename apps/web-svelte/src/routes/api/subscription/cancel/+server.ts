@@ -18,7 +18,18 @@ export const POST: RequestHandler = async ({ request, locals }) => {
       return json({ error: 'Datos incompletos' }, { status: 400 });
     }
 
-    // Buscar la suscripción por ID (que es único)
+    // Primero buscar por userId para ver qué suscripciones tiene
+    const { data: allUserSubs, error: allSubsError } = await locals.supabase
+      .from('Subscription')
+      .select('id, userId, status')
+      .eq('userId', userId);
+
+    console.log('[Cancel Subscription] Todas las subs del usuario:', {
+      count: allUserSubs?.length,
+      subs: allUserSubs,
+    });
+
+    // Ahora buscar la suscripción específica por ID
     const { data: subscriptions, error: subError } = await locals.supabase
       .from('Subscription')
       .select('*')
@@ -27,6 +38,7 @@ export const POST: RequestHandler = async ({ request, locals }) => {
     console.log('[Cancel Subscription] Query result:', { 
       count: subscriptions?.length,
       error: subError,
+      searching: subscriptionId,
     });
 
     if (subError) {
@@ -34,6 +46,11 @@ export const POST: RequestHandler = async ({ request, locals }) => {
       return json({ 
         error: 'Error al buscar suscripción',
         details: subError.message,
+        debug: {
+          subscriptionId,
+          userId,
+          allUserSubs: allUserSubs?.map(s => s.id),
+        }
       }, { status: 500 });
     }
 
@@ -41,6 +58,10 @@ export const POST: RequestHandler = async ({ request, locals }) => {
       console.error('[Cancel Subscription] No se encontró suscripción con ID:', subscriptionId);
       return json({ 
         error: 'Suscripción no encontrada',
+        debug: {
+          searchedId: subscriptionId,
+          userHasSubs: allUserSubs?.map(s => ({ id: s.id, status: s.status })),
+        }
       }, { status: 404 });
     }
 
