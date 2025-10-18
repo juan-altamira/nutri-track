@@ -46,8 +46,13 @@ export async function requireSubscription(): Promise<boolean> {
 
     if (!subscription || !['active', 'on_trial'].includes(subscription.status)) {
       console.log('[Auth Guard] Sin suscripción válida, redirigiendo a /subscription');
+      console.log('[Auth Guard] Subscription:', subscription);
       console.log('[Auth Guard] Status:', subscription?.status);
-      goto('/subscription');
+      
+      // Evitar loop infinito: solo redirigir si no estamos ya en la página de subscription
+      if (typeof window !== 'undefined' && !window.location.pathname.startsWith('/subscription')) {
+        goto('/subscription');
+      }
       return false;
     }
 
