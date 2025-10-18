@@ -15,12 +15,15 @@
     // Verificar sesión del lado del cliente
     const { data: { session } } = await supabase.auth.getSession();
     
+    console.log('[Subscription] Session:', session ? 'existe' : 'null');
+    
     if (!session) {
       goto('/login?returnUrl=/subscription/manage');
       return;
     }
 
     userId = session.user.id;
+    console.log('[Subscription] User ID:', userId);
 
     // Cargar suscripción
     try {
@@ -30,11 +33,15 @@
         .eq('userId', userId)
         .single();
 
+      console.log('[Subscription] Query result:', { subData, error });
+
       if (error && error.code !== 'PGRST116') { // PGRST116 = no rows
+        console.error('[Subscription] Error:', error);
         throw error;
       }
 
       subscription = subData;
+      console.log('[Subscription] Final subscription:', subscription);
     } catch (err: any) {
       console.error('[Subscription] Load error:', err);
       toasts.error('Error al cargar suscripción');
