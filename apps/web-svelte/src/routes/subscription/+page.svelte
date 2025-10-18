@@ -20,38 +20,77 @@
   let userId = $state<string | null>(null);
 
   onMount(async () => {
-    // Verificar sesión del lado del cliente (más confiable que SSR)
-    const { data: { session } } = await supabase.auth.getSession();
-    
-    if (!session) {
-      console.log('[Subscription] No hay sesión, redirigiendo a login');
-      window.location.href = '/login?returnUrl=/subscription';
-      return;
+    try {
+      console.log('[Subscription onMount] Iniciando...');
+      
+      // Timeout de seguridad
+      const timeout = setTimeout(() => {
+        console.error('[Subscription] Timeout - recargando...');
+        loading = false;
+        toasts.error('La página tardó demasiado en cargar. Recargá la página.');
+      }, 10000); // 10 segundos
+      
+      // Verificar sesión del lado del cliente (más confiable que SSR)
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+      
+      console.log('[Subscription] Session:', session ? 'existe' : 'null');
+      console.log('[Subscription] Session error:', sessionError);
+      
+      if (sessionError) {
+        console.error('[Subscription] Error de sesión:', sessionError);
+        clearTimeout(timeout);
+        toasts.error('Error al verificar sesión. Iniciá sesión nuevamente.');
+        setTimeout(() => {
+          window.location.href = '/login';
+        }, 2000);
+        return;
+      }
+      
+      if (!session) {
+        console.log('[Subscription] No hay sesión, redirigiendo a login');
+        clearTimeout(timeout);
+        window.location.href = '/login?returnUrl=/subscription';
+        return;
+      }
+      
+      userId = session.user.id;
+      console.log('[Subscription] User ID:', userId);
+      
+      await loadSubscription();
+      clearTimeout(timeout);
+    } catch (error) {
+      console.error('[Subscription onMount] Error inesperado:', error);
+      loading = false;
+      toasts.error('Error al cargar la página. Por favor, recargá.');
     }
-    
-    userId = session.user.id;
-    await loadSubscription();
   });
 
   async function loadSubscription() {
     try {
       loading = true;
+      console.log('[Subscription] Cargando suscripción para userId:', userId);
+      
       const { data: subData, error } = await supabase
         .from('Subscription')
         .select('*')
         .eq('userId', userId)
         .single();
 
+      console.log('[Subscription] Query result:', { subData, error });
+
       if (error && error.code !== 'PGRST116') { // PGRST116 = no rows
+        console.error('[Subscription] Error en query:', error);
         throw error;
       }
 
       subscription = subData;
+      console.log('[Subscription] Subscription loaded:', subscription ? 'existe' : 'null');
     } catch (err: any) {
       console.error('[Subscription] Load error:', err);
       toasts.error('Error al cargar suscripción');
     } finally {
       loading = false;
+      console.log('[Subscription] Loading complete');
     }
   }
 
@@ -151,8 +190,20 @@
   <h1 class="text-3xl font-bold mb-6">Mi Suscripción</h1>
 
   {#if loading}
-    <div class="p-6 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800">
-      <p class="text-gray-600 dark:text-gray-400">Cargando...</p>
+    <div class="p-6 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-center space-y-4">
+      <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+      <p class="text-gray-600 dark:text-gray-400">Cargando información de tu suscripción...</p>
+      <div class="pt-4 text-sm text-gray-500 dark:text-gray-500">
+        <p>¿Tarda demasiado?</p>
+        <div class="flex gap-4 justify-center mt-2">
+          <button onclick={() => window.location.reload()} class="text-blue-600 hover:underline">
+            Recargar página
+          </button>
+          <a href="/logout" class="text-gray-600 hover:underline">
+            Cerrar sesión
+          </a>
+        </div>
+      </div>
     </div>
   {:else if subscription}
     <!-- Usuario tiene suscripción -->
