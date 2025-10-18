@@ -10,10 +10,11 @@ interface CreateCheckoutOptions {
   userId: string;
   userEmail: string;
   userName?: string;
+  isRenewal?: boolean; // Usuario ya tuvo suscripción antes
 }
 
 export async function createCheckout(options: CreateCheckoutOptions) {
-  const { userId, userEmail, userName } = options;
+  const { userId, userEmail, userName, isRenewal = false } = options;
 
   const checkoutData = {
     data: {
@@ -24,8 +25,10 @@ export async function createCheckout(options: CreateCheckoutOptions) {
           name: userName || userEmail.split('@')[0] || 'Usuario',
           custom: {
             user_id: userId, // Este es crítico para el webhook
+            is_renewal: isRenewal ? 'true' : 'false',
           },
         },
+        test_mode: false,
         checkout_options: {
           embed: false,
           media: false,

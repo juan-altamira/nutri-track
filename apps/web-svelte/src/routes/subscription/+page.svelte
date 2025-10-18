@@ -270,16 +270,23 @@
           {/if}
         {:else if ['cancelled', 'expired'].includes(subscription.status)}
           <!-- Suscripción cancelada/expirada: crear nueva -->
-          <button
-            onclick={handleSubscribe}
-            disabled={checkoutLoading}
-            class="inline-block px-6 py-3 rounded-md bg-blue-600 text-white hover:bg-blue-500 disabled:opacity-60 disabled:cursor-not-allowed transition-colors font-semibold"
-          >
-            {checkoutLoading ? 'Cargando...' : 'Reactivar Suscripción →'}
-          </button>
-          <p class="text-sm text-gray-600 dark:text-gray-400">
-            Nota: La prueba gratuita solo está disponible una vez. Tu nueva suscripción comenzará inmediatamente.
-          </p>
+          <div class="space-y-3">
+            <div class="p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700 rounded-lg">
+              <p class="text-sm text-blue-800 dark:text-blue-200 font-medium mb-2">
+                ℹ️ Información importante
+              </p>
+              <p class="text-sm text-blue-700 dark:text-blue-300">
+                Al reactivar tu suscripción, <strong>no tendrás período de prueba gratuito</strong> ya que solo está disponible para nuevos usuarios. La facturación comenzará de inmediato al precio de USD 9.90/mes.
+              </p>
+            </div>
+            <button
+              onclick={handleSubscribe}
+              disabled={checkoutLoading}
+              class="inline-block px-6 py-3 rounded-md bg-blue-600 text-white hover:bg-blue-500 disabled:opacity-60 disabled:cursor-not-allowed transition-colors font-semibold"
+            >
+              {checkoutLoading ? 'Cargando...' : 'Reactivar Suscripción →'}
+            </button>
+          </div>
         {/if}
       </div>
     </div>
