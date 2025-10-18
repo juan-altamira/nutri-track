@@ -14,21 +14,11 @@
   let returnUrl = $derived($page.url.searchParams.get('returnUrl') || '/dashboard');
 
   onMount(async () => {
-    // Si ya hay sesión, verificar suscripción antes de redirigir
+    // Si ya hay sesión, redirigir a /subscription que se encargará de verificar
     const { data: { session } } = await supabase.auth.getSession();
     if (session) {
-      const { data: subscription } = await supabase
-        .from('Subscription')
-        .select('status')
-        .eq('userId', session.user.id)
-        .single();
-      
-      // Si no tiene suscripción, ir a página de suscripción
-      if (!subscription || !['active', 'on_trial'].includes(subscription.status)) {
-        window.location.href = '/subscription';
-      } else {
-        window.location.href = returnUrl;
-      }
+      console.log('[Login onMount] Ya hay sesión, redirigiendo a /subscription');
+      window.location.href = '/subscription';
     }
   });
 
@@ -77,31 +67,14 @@
           : 'Error al iniciar sesión. Por favor, intenta nuevamente';
       }
     } else {
-      // Login exitoso - verificar suscripción antes de redirigir
-      console.log('[Login] Login exitoso, verificando suscripción...');
+      // Login exitoso - redirigir a /subscription que se encargará de verificar
+      console.log('[Login] Login exitoso, redirigiendo a /subscription');
       
       // Esperar 500ms para que las cookies se propaguen
       await new Promise(resolve => setTimeout(resolve, 500));
       
-      // Verificar si el usuario tiene suscripción
-      const { data: { session: newSession } } = await supabase.auth.getSession();
-      if (newSession) {
-        const { data: subscription } = await supabase
-          .from('Subscription')
-          .select('status')
-          .eq('userId', newSession.user.id)
-          .single();
-        
-        // Si no tiene suscripción, redirigir a página de suscripción
-        if (!subscription || !['active', 'on_trial'].includes(subscription.status)) {
-          console.log('[Login] Sin suscripción, redirigiendo a /subscription');
-          window.location.href = '/subscription';
-          return;
-        }
-      }
-      
-      console.log('[Login] Redirigiendo a:', returnUrl);
-      window.location.href = returnUrl;
+      console.log('[Login] Redirigiendo a /subscription');
+      window.location.href = '/subscription';
     }
   }
 

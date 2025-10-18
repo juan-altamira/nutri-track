@@ -44,6 +44,14 @@
       }
 
       subscription = subData;
+      
+      // Si el usuario tiene suscripción activa, redirigir al dashboard
+      if (subscription && ['active', 'on_trial'].includes(subscription.status)) {
+        console.log('[Subscription] Usuario con suscripción activa, redirigiendo a dashboard');
+        loading = false; // Dejar de mostrar "Cargando..."
+        window.location.href = '/dashboard';
+        return; // No continuar
+      }
     } catch (err: any) {
       console.error('[Subscription] Load error:', err);
       toasts.error('Error al cargar suscripción');
