@@ -18,30 +18,46 @@ export const POST: RequestHandler = async ({ request, locals }) => {
       return json({ error: 'Datos incompletos' }, { status: 400 });
     }
 
-    // Verificar que la suscripción pertenece al usuario
-    const { data: subscription, error: subError } = await locals.supabase
+    // Buscar la suscripción por ID (que es único)
+    const { data: subscriptions, error: subError } = await locals.supabase
       .from('Subscription')
       .select('*')
-      .eq('id', subscriptionId)
-      .eq('userId', userId)
-      .single();
+      .eq('id', subscriptionId);
 
-    console.log('[Cancel Subscription] Subscription found:', subscription ? 'sí' : 'no');
-    console.log('[Cancel Subscription] Query error:', subError);
+    console.log('[Cancel Subscription] Query result:', { 
+      count: subscriptions?.length,
+      error: subError,
+    });
 
-    if (subError || !subscription) {
-      console.error('[Cancel Subscription] Error detallado:', {
-        subError,
-        subscriptionId,
-        userId,
-        errorCode: subError?.code,
-        errorMessage: subError?.message,
-      });
+    if (subError) {
+      console.error('[Cancel Subscription] Error en query:', subError);
       return json({ 
-        error: 'Subscription not found',
-        details: subError?.message || 'No se encontró la suscripción',
+        error: 'Error al buscar suscripción',
+        details: subError.message,
+      }, { status: 500 });
+    }
+
+    if (!subscriptions || subscriptions.length === 0) {
+      console.error('[Cancel Subscription] No se encontró suscripción con ID:', subscriptionId);
+      return json({ 
+        error: 'Suscripción no encontrada',
       }, { status: 404 });
     }
+
+    const subscription = subscriptions[0];
+
+    // Verificar que pertenece al usuario
+    if (subscription.userId !== userId) {
+      console.error('[Cancel Subscription] UserId no coincide:', {
+        expected: userId,
+        found: subscription.userId,
+      });
+      return json({ 
+        error: 'No autorizado',
+      }, { status: 403 });
+    }
+
+    console.log('[Cancel Subscription] Subscription found:', subscription.id);
 
     // Cancelar en Lemon Squeezy
     console.log('[Cancel Subscription] Llamando a Lemon Squeezy API...');
