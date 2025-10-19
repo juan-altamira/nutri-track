@@ -1,21 +1,14 @@
 import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import { createClient } from '@supabase/supabase-js';
-import { SUPABASE_SERVICE_ROLE_KEY, MERCADOPAGO_ACCESS_TOKEN } from '$env/static/private';
-import { PUBLIC_SUPABASE_URL, PUBLIC_MERCADOPAGO_PUBLIC_KEY } from '$env/static/public';
-import { MercadoPagoConfig, Preference } from 'mercadopago';
+import { SUPABASE_SERVICE_ROLE_KEY, MERCADOPAGO_ACCESS_TOKEN, MERCADOPAGO_PLAN_ID } from '$env/static/private';
+import { PUBLIC_SUPABASE_URL } from '$env/static/public';
 
 // Cliente admin para bypasear RLS
 const supabaseAdmin = createClient(
   PUBLIC_SUPABASE_URL,
   SUPABASE_SERVICE_ROLE_KEY
 );
-
-// Cliente de Mercado Pago
-const client = new MercadoPagoConfig({ 
-  accessToken: MERCADOPAGO_ACCESS_TOKEN,
-});
-const preference = new Preference(client);
 
 export const POST: RequestHandler = async ({ request }) => {
   try {
@@ -52,44 +45,42 @@ export const POST: RequestHandler = async ({ request }) => {
       console.log('[Checkout MP] Usuario nuevo');
     }
 
-    // Crear preferencia de Mercado Pago
-    // Nota: Mercado Pago no tiene suscripciones nativas como Lemon Squeezy
-    // Por ahora creamos un pago único, luego implementaremos suscripciones recurrentes
-    const preferenceData = await preference.create({
-      body: {
-        items: [
-          {
-            id: 'nutri-track-monthly',
-            title: 'Nutri-Track - Suscripción Mensual',
-            description: 'Acceso completo a todas las funcionalidades',
-            quantity: 1,
-            unit_price: 9900, // ARS 9,900
-            currency_id: 'ARS',
-          },
-        ],
-        payer: {
-          email: userEmail,
-          name: userName,
-        },
-        back_urls: {
-          success: 'https://www.nutri-track.pro/subscription/success',
-          failure: 'https://www.nutri-track.pro/subscription',
-          pending: 'https://www.nutri-track.pro/subscription',
-        },
-        auto_return: 'approved',
-        notification_url: 'https://www.nutri-track.pro/api/webhooks/mercadopago',
-        metadata: {
-          user_id: userId,
-          user_email: userEmail,
-          region: 'argentina',
-        },
+    // Crear suscripción (preapproval) en Mercado Pago
+    const subscriptionData = {
+      preapproval_plan_id: MERCADOPAGO_PLAN_ID,
+      reason: 'Nutri-Track - Suscripción Mensual',
+      payer_email: userEmail,
+      back_url: 'https://www.nutri-track.pro/subscription/success',
+      external_reference: userId,
+      status: 'pending',
+    };
+
+    console.log('[Checkout MP] Creating preapproval with plan:', MERCADOPAGO_PLAN_ID);
+
+    const response = await fetch('https://api.mercadopago.com/preapproval', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${MERCADOPAGO_ACCESS_TOKEN}`,
       },
+      body: JSON.stringify(subscriptionData),
     });
 
-    console.log('[Checkout MP] Preference created:', preferenceData.id);
+    const result = await response.json();
+
+    if (!response.ok) {
+      console.error('[Checkout MP] Error creating preapproval:', result);
+      throw new Error(result.message || 'Error al crear suscripción en Mercado Pago');
+    }
+
+    console.log('[Checkout MP] Preapproval created:', {
+      id: result.id,
+      status: result.status,
+      init_point: result.init_point,
+    });
 
     // Retornar URL del checkout
-    const checkoutUrl = preferenceData.init_point || preferenceData.sandbox_init_point;
+    const checkoutUrl = result.init_point || result.sandbox_init_point;
 
     return json({ checkoutUrl });
   } catch (err: any) {

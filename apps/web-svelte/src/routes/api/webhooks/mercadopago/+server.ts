@@ -3,19 +3,12 @@ import type { RequestHandler } from './$types';
 import { createClient } from '@supabase/supabase-js';
 import { SUPABASE_SERVICE_ROLE_KEY, MERCADOPAGO_ACCESS_TOKEN } from '$env/static/private';
 import { PUBLIC_SUPABASE_URL } from '$env/static/public';
-import { MercadoPagoConfig, Payment } from 'mercadopago';
 
 // Cliente admin para bypasear RLS
 const supabaseAdmin = createClient(
   PUBLIC_SUPABASE_URL,
   SUPABASE_SERVICE_ROLE_KEY
 );
-
-// Cliente de Mercado Pago
-const client = new MercadoPagoConfig({ 
-  accessToken: MERCADOPAGO_ACCESS_TOKEN,
-});
-const payment = new Payment(client);
 
 export const POST: RequestHandler = async ({ request }) => {
   try {
@@ -24,53 +17,72 @@ export const POST: RequestHandler = async ({ request }) => {
     const body = await request.json();
     console.log('[Webhook MP] Body:', JSON.stringify(body, null, 2));
 
-    // Mercado Pago envía notificaciones en este formato:
-    // { type: 'payment', data: { id: 'payment_id' } }
-    const notificationType = body.type;
+    // Mercado Pago envía notificaciones de preapproval:
+    // { action: "created/updated", type: "subscription_preapproval", data: { id: "preapproval_id" } }
+    const notificationType = body.type || body.topic;
+    const action = body.action;
     
-    if (notificationType !== 'payment') {
-      console.log('[Webhook MP] Tipo de notificación no soportado:', notificationType);
+    console.log('[Webhook MP] Type:', notificationType, 'Action:', action);
+    
+    // Solo procesar notificaciones de suscripciones
+    if (notificationType !== 'subscription_preapproval' && notificationType !== 'preapproval') {
+      console.log('[Webhook MP] Tipo no soportado, ignorando');
       return json({ received: true });
     }
 
-    const paymentId = body.data?.id;
+    const preapprovalId = body.data?.id || body.id;
     
-    if (!paymentId) {
-      console.error('[Webhook MP] No se encontró payment ID');
-      return json({ error: 'Missing payment ID' }, { status: 400 });
+    if (!preapprovalId) {
+      console.error('[Webhook MP] No se encontró preapproval ID');
+      return json({ error: 'Missing preapproval ID' }, { status: 400 });
     }
 
-    console.log('[Webhook MP] Payment ID:', paymentId);
+    console.log('[Webhook MP] Preapproval ID:', preapprovalId);
 
-    // Obtener detalles del pago desde Mercado Pago
-    const paymentInfo = await payment.get({ id: paymentId });
-    
-    console.log('[Webhook MP] Payment info:', {
-      id: paymentInfo.id,
-      status: paymentInfo.status,
-      metadata: paymentInfo.metadata,
+    // Obtener detalles de la suscripción desde Mercado Pago
+    const response = await fetch(`https://api.mercadopago.com/preapproval/${preapprovalId}`, {
+      headers: {
+        'Authorization': `Bearer ${MERCADOPAGO_ACCESS_TOKEN}`,
+      },
     });
 
-    // Extraer user_id de metadata
-    const userId = paymentInfo.metadata?.user_id;
+    if (!response.ok) {
+      console.error('[Webhook MP] Error al obtener preapproval:', response.status);
+      return json({ error: 'Error fetching preapproval' }, { status: 500 });
+    }
+
+    const preapprovalInfo = await response.json();
+    
+    console.log('[Webhook MP] Preapproval info:', {
+      id: preapprovalInfo.id,
+      status: preapprovalInfo.status,
+      external_reference: preapprovalInfo.external_reference,
+      payer_email: preapprovalInfo.payer_email,
+    });
+
+    // Extraer user_id de external_reference
+    const userId = preapprovalInfo.external_reference;
     
     if (!userId) {
-      console.error('[Webhook MP] No se encontró user_id en metadata');
-      return json({ error: 'Missing user_id in metadata' }, { status: 400 });
+      console.error('[Webhook MP] No se encontró user_id en external_reference');
+      return json({ error: 'Missing user_id' }, { status: 400 });
     }
 
     // Mapear status de Mercado Pago a nuestro sistema
+    // authorized: suscripción autorizada (en trial o activa)
+    // paused: pausada
+    // cancelled: cancelada
     let subscriptionStatus = 'active';
     
-    if (paymentInfo.status === 'approved') {
-      subscriptionStatus = 'on_trial'; // Primera compra = trial
-    } else if (paymentInfo.status === 'pending') {
-      subscriptionStatus = 'past_due';
-    } else if (paymentInfo.status === 'rejected' || paymentInfo.status === 'cancelled') {
+    if (preapprovalInfo.status === 'authorized') {
+      subscriptionStatus = 'on_trial'; // Durante el trial
+    } else if (preapprovalInfo.status === 'paused') {
+      subscriptionStatus = 'paused';
+    } else if (preapprovalInfo.status === 'cancelled') {
       subscriptionStatus = 'cancelled';
     }
 
-    // Buscar o crear suscripción
+    // Buscar suscripción existente
     const { data: existingSub } = await supabaseAdmin
       .from('Subscription')
       .select('*')
@@ -78,8 +90,11 @@ export const POST: RequestHandler = async ({ request }) => {
       .single();
 
     const now = new Date();
-    const trialEndsAt = new Date(now.getTime() + 14 * 24 * 60 * 60 * 1000); // 14 días
-    const renewsAt = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000); // 30 días
+    
+    // Calcular fechas basadas en auto_recurring del plan
+    const nextPaymentDate = preapprovalInfo.next_payment_date 
+      ? new Date(preapprovalInfo.next_payment_date)
+      : new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
 
     if (existingSub) {
       // Actualizar suscripción existente
@@ -90,9 +105,10 @@ export const POST: RequestHandler = async ({ request }) => {
         .update({
           status: subscriptionStatus,
           paymentProvider: 'mercadopago',
-          mercadopagoSubscriptionId: String(paymentInfo.id),
-          mercadopagoCustomerId: String(paymentInfo.payer?.id || ''),
+          mercadopagoSubscriptionId: preapprovalInfo.id,
+          mercadopagoCustomerId: String(preapprovalInfo.payer_id || ''),
           region: 'argentina',
+          renewsAt: nextPaymentDate.toISOString(),
           updatedAt: now.toISOString(),
         })
         .eq('id', existingSub.id);
@@ -105,17 +121,19 @@ export const POST: RequestHandler = async ({ request }) => {
       // Crear nueva suscripción
       console.log('[Webhook MP] Creando nueva suscripción');
       
+      const trialEndsAt = new Date(now.getTime() + 14 * 24 * 60 * 60 * 1000); // 14 días
+      
       const { error } = await supabaseAdmin
         .from('Subscription')
         .insert({
           userId: userId,
           status: subscriptionStatus,
           paymentProvider: 'mercadopago',
-          mercadopagoSubscriptionId: String(paymentInfo.id),
-          mercadopagoCustomerId: String(paymentInfo.payer?.id || ''),
+          mercadopagoSubscriptionId: preapprovalInfo.id,
+          mercadopagoCustomerId: String(preapprovalInfo.payer_id || ''),
           region: 'argentina',
           trialEndsAt: trialEndsAt.toISOString(),
-          renewsAt: renewsAt.toISOString(),
+          renewsAt: nextPaymentDate.toISOString(),
         });
 
       if (error) {
