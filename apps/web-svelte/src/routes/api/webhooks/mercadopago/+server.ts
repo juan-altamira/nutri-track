@@ -1,7 +1,8 @@
 import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import { createClient } from '@supabase/supabase-js';
-import { SUPABASE_SERVICE_ROLE_KEY, MERCADOPAGO_ACCESS_TOKEN } from '$env/static/private';
+import { SUPABASE_SERVICE_ROLE_KEY } from '$env/static/private';
+import { env } from '$env/dynamic/private';
 import { PUBLIC_SUPABASE_URL } from '$env/static/public';
 
 // Cliente admin para bypasear RLS
@@ -42,7 +43,7 @@ export const POST: RequestHandler = async ({ request }) => {
     // Obtener detalles de la suscripción desde Mercado Pago
     const response = await fetch(`https://api.mercadopago.com/preapproval/${preapprovalId}`, {
       headers: {
-        'Authorization': `Bearer ${MERCADOPAGO_ACCESS_TOKEN}`,
+        'Authorization': `Bearer ${env.MERCADOPAGO_ACCESS_TOKEN}`,
       },
     });
 

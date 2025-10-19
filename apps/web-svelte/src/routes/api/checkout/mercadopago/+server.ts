@@ -1,7 +1,8 @@
 import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import { createClient } from '@supabase/supabase-js';
-import { SUPABASE_SERVICE_ROLE_KEY, MERCADOPAGO_ACCESS_TOKEN, MERCADOPAGO_PLAN_ID } from '$env/static/private';
+import { SUPABASE_SERVICE_ROLE_KEY } from '$env/static/private';
+import { env } from '$env/dynamic/private';
 import { PUBLIC_SUPABASE_URL } from '$env/static/public';
 
 // Cliente admin para bypasear RLS
@@ -13,8 +14,8 @@ const supabaseAdmin = createClient(
 export const POST: RequestHandler = async ({ request }) => {
   try {
     console.log('[Checkout MP] Iniciando...');
-    console.log('[Checkout MP] MERCADOPAGO_PLAN_ID:', MERCADOPAGO_PLAN_ID);
-    console.log('[Checkout MP] MERCADOPAGO_ACCESS_TOKEN:', MERCADOPAGO_ACCESS_TOKEN ? 'EXISTE' : 'NO EXISTE');
+    console.log('[Checkout MP] MERCADOPAGO_PLAN_ID:', env.MERCADOPAGO_PLAN_ID);
+    console.log('[Checkout MP] MERCADOPAGO_ACCESS_TOKEN:', env.MERCADOPAGO_ACCESS_TOKEN ? 'EXISTE' : 'NO EXISTE');
     
     // Obtener datos del body
     const body = await request.json();
@@ -49,7 +50,7 @@ export const POST: RequestHandler = async ({ request }) => {
 
     // Crear suscripción (preapproval) en Mercado Pago
     const subscriptionData = {
-      preapproval_plan_id: MERCADOPAGO_PLAN_ID,
+      preapproval_plan_id: env.MERCADOPAGO_PLAN_ID,
       reason: 'Nutri-Track - Suscripción Mensual',
       payer_email: userEmail,
       back_url: 'https://www.nutri-track.pro/subscription/success',
@@ -57,13 +58,13 @@ export const POST: RequestHandler = async ({ request }) => {
       status: 'pending',
     };
 
-    console.log('[Checkout MP] Creating preapproval with plan:', MERCADOPAGO_PLAN_ID);
+    console.log('[Checkout MP] Creating preapproval with plan:', env.MERCADOPAGO_PLAN_ID);
 
     const response = await fetch('https://api.mercadopago.com/preapproval', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${MERCADOPAGO_ACCESS_TOKEN}`,
+        'Authorization': `Bearer ${env.MERCADOPAGO_ACCESS_TOKEN}`,
       },
       body: JSON.stringify(subscriptionData),
     });
