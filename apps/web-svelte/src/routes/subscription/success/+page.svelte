@@ -27,7 +27,7 @@
       ¡Gracias por suscribirte!
     </h1>
     <p class="text-gray-600 dark:text-gray-400 mb-8">
-      Tu suscripción a Nutri-Track Premium se ha activado correctamente.
+      Tu suscripción a Nutri-Track se ha activado correctamente.
     </p>
     <div class="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-6 mb-8">
       <p class="text-sm text-gray-700 dark:text-gray-300">

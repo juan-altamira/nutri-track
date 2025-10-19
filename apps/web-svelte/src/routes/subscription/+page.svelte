@@ -209,7 +209,7 @@
     <!-- Usuario tiene suscripción -->
     <div class="p-6 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 space-y-4">
       <div>
-        <h2 class="text-xl font-semibold mb-2">Nutri-Track Premium</h2>
+        <h2 class="text-xl font-semibold mb-2">Nutri-Track</h2>
         <p class="text-sm text-gray-600 dark:text-gray-400">
           Acceso completo a todas las funcionalidades
         </p>
@@ -311,7 +311,7 @@
 
     <div class="p-6 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 space-y-6">
       <div>
-        <h2 class="text-2xl font-bold mb-2">Nutri-Track Premium</h2>
+        <h2 class="text-2xl font-bold mb-2">Nutri-Track</h2>
         <p class="text-gray-600 dark:text-gray-400">
           Acceso completo a todas las funcionalidades de seguimiento nutricional
         </p>

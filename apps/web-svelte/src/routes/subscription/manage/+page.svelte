@@ -108,7 +108,7 @@
     });
 
     const confirmed = confirm(
-      '¿Estás seguro que deseas cancelar tu suscripción? Perderás acceso a las funcionalidades premium al finalizar el período actual.'
+      '¿Estás seguro que deseas cancelar tu suscripción? Perderás acceso a todas las funcionalidades al finalizar el período actual.'
     );
 
     if (!confirmed) return;
@@ -190,7 +190,7 @@
         <div class="text-6xl mb-4">📦</div>
         <h2 class="text-2xl font-bold mb-4 text-gray-900 dark:text-gray-100">No tienes una suscripción activa</h2>
         <p class="text-gray-600 dark:text-gray-400 mb-6">
-          Suscríbete a Nutri-Track Premium para acceder a todas las funcionalidades.
+          Suscríbete a Nutri-Track para acceder a todas las funcionalidades.
         </p>
         <button
           onclick={() => goto('/subscription')}
