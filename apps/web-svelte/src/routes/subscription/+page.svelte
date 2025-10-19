@@ -188,7 +188,7 @@
   <!-- Force rebuild -->
 </svelte:head>
 
-<div class="min-h-screen p-4 max-w-2xl mx-auto">
+<div class="min-h-screen p-4 pb-32 max-w-2xl mx-auto">
   {#if subscription && ['active', 'on_trial'].includes(subscription.status)}
     <div class="mb-6">
       <a href="/dashboard" class="text-blue-600 dark:text-blue-400 hover:underline">
