@@ -18,6 +18,7 @@
   let loading = $state(true);
   let checkoutLoading = $state(false);
   let userId = $state<string | null>(null);
+  let selectedRegion = $state<'argentina' | 'international' | null>(null);
 
   onMount(async () => {
     try {
@@ -96,6 +97,11 @@
 
   async function handleSubscribe() {
     try {
+      if (!selectedRegion) {
+        toasts.error('Por favor, seleccioná una región');
+        return;
+      }
+
       checkoutLoading = true;
 
       // Obtener el access token del cliente
@@ -105,7 +111,14 @@
         throw new Error('No hay sesión activa. Por favor, recargá la página.');
       }
 
-      const response = await fetch('/api/checkout', {
+      // Elegir endpoint según la región
+      const endpoint = selectedRegion === 'argentina' 
+        ? '/api/checkout/mercadopago' 
+        : '/api/checkout';
+
+      console.log('[Subscription] Creando checkout:', { region: selectedRegion, endpoint });
+
+      const response = await fetch(endpoint, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -115,6 +128,7 @@
           userId: session.user.id,
           userEmail: session.user.email,
           userName: session.user.user_metadata?.name || session.user.email?.split('@')[0] || 'Usuario',
+          region: selectedRegion,
         }),
       });
 
@@ -124,7 +138,7 @@
         throw new Error(responseData.error || 'Error al crear checkout');
       }
 
-      // Redirigir al checkout de Lemon Squeezy
+      // Redirigir al checkout (Mercado Pago o Lemon Squeezy)
       window.location.href = responseData.checkoutUrl;
     } catch (err: any) {
       console.error('[Subscription] Subscribe error:', err);
@@ -344,20 +358,90 @@
       </div>
 
       <div class="border-t border-gray-200 dark:border-gray-700 pt-6">
-        <div class="mb-4">
-          <p class="text-3xl font-bold mb-1">USD 9,90/mes</p>
-          <p class="text-sm text-gray-600 dark:text-gray-400">
-            14 días de prueba gratuita · Cancela cuando quieras
-          </p>
-        </div>
+        {#if !selectedRegion}
+          <!-- Selector de Región -->
+          <div class="space-y-4">
+            <h3 class="text-lg font-semibold text-center mb-6">Seleccioná tu región</h3>
+            
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <!-- Opción Argentina -->
+              <button
+                onclick={() => selectedRegion = 'argentina'}
+                class="group p-6 border-2 border-gray-200 dark:border-gray-700 rounded-lg hover:border-blue-500 dark:hover:border-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-all"
+              >
+                <div class="text-5xl mb-3">🇦🇷</div>
+                <h4 class="font-bold text-lg mb-2">Argentina</h4>
+                <p class="text-sm text-gray-600 dark:text-gray-400 mb-3">
+                  Pago con Mercado Pago
+                </p>
+                <p class="text-2xl font-bold text-blue-600 dark:text-blue-400">
+                  ARS 9.900/mes
+                </p>
+                <p class="text-xs text-gray-500 dark:text-gray-500 mt-2">
+                  14 días de prueba gratuita
+                </p>
+              </button>
 
-        <button
-          onclick={handleSubscribe}
-          disabled={checkoutLoading}
-          class="w-full sm:w-auto px-6 py-3 rounded-lg bg-blue-600 text-white font-semibold hover:bg-blue-500 disabled:opacity-60 disabled:cursor-not-allowed transition-colors"
-        >
-          {checkoutLoading ? 'Redirigiendo...' : 'Comenzar prueba gratuita'}
-        </button>
+              <!-- Opción Internacional -->
+              <button
+                onclick={() => selectedRegion = 'international'}
+                class="group p-6 border-2 border-gray-200 dark:border-gray-700 rounded-lg hover:border-blue-500 dark:hover:border-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-all"
+              >
+                <div class="text-5xl mb-3">🌍</div>
+                <h4 class="font-bold text-lg mb-2">Internacional</h4>
+                <p class="text-sm text-gray-600 dark:text-gray-400 mb-3">
+                  Pago con tarjetas internacionales
+                </p>
+                <p class="text-2xl font-bold text-blue-600 dark:text-blue-400">
+                  USD 9.90/mes
+                </p>
+                <p class="text-xs text-gray-500 dark:text-gray-500 mt-2">
+                  14 días de prueba gratuita
+                </p>
+              </button>
+            </div>
+          </div>
+        {:else}
+          <!-- Confirmación y Botón de Pago -->
+          <div class="space-y-4">
+            <div class="flex items-center justify-between mb-4">
+              <div>
+                <p class="text-sm text-gray-600 dark:text-gray-400">Región seleccionada:</p>
+                <p class="text-lg font-semibold">
+                  {selectedRegion === 'argentina' ? '🇦🇷 Argentina' : '🌍 Internacional'}
+                </p>
+              </div>
+              <button
+                onclick={() => selectedRegion = null}
+                class="text-sm text-blue-600 dark:text-blue-400 hover:underline"
+              >
+                Cambiar
+              </button>
+            </div>
+
+            <div class="mb-4 p-4 bg-gray-100 dark:bg-gray-700 rounded-lg">
+              <p class="text-3xl font-bold mb-1">
+                {selectedRegion === 'argentina' ? 'ARS 9.900/mes' : 'USD 9.90/mes'}
+              </p>
+              <p class="text-sm text-gray-600 dark:text-gray-400">
+                14 días de prueba gratuita · Cancela cuando quieras
+              </p>
+              <p class="text-xs text-gray-500 dark:text-gray-500 mt-2">
+                {selectedRegion === 'argentina' 
+                  ? 'Procesado por Mercado Pago (ARS)' 
+                  : 'Procesado por Lemon Squeezy (USD)'}
+              </p>
+            </div>
+
+            <button
+              onclick={handleSubscribe}
+              disabled={checkoutLoading}
+              class="w-full px-6 py-3 rounded-lg bg-blue-600 text-white font-semibold hover:bg-blue-500 disabled:opacity-60 disabled:cursor-not-allowed transition-colors"
+            >
+              {checkoutLoading ? 'Redirigiendo...' : 'Comenzar prueba gratuita'}
+            </button>
+          </div>
+        {/if}
       </div>
     </div>
   {/if}
