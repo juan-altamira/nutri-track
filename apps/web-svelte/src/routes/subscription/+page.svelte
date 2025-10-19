@@ -184,6 +184,7 @@
 
 <svelte:head>
   <title>Suscripción | Nutri-Track</title>
+  <meta name="description" content="Elegí tu plan de suscripción" />
 </svelte:head>
 
 <div class="min-h-screen p-4 max-w-2xl mx-auto">
