@@ -13,6 +13,8 @@ const supabaseAdmin = createClient(
 export const POST: RequestHandler = async ({ request }) => {
   try {
     console.log('[Checkout MP] Iniciando...');
+    console.log('[Checkout MP] MERCADOPAGO_PLAN_ID:', MERCADOPAGO_PLAN_ID);
+    console.log('[Checkout MP] MERCADOPAGO_ACCESS_TOKEN:', MERCADOPAGO_ACCESS_TOKEN ? 'EXISTE' : 'NO EXISTE');
     
     // Obtener datos del body
     const body = await request.json();
