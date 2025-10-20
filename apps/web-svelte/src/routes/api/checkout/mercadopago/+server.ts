@@ -58,6 +58,7 @@ export const POST: RequestHandler = async ({ request }) => {
     };
 
     console.log('[Checkout MP] Creating preapproval with plan:', env.MERCADOPAGO_PLAN_ID);
+    console.log('[Checkout MP] Request body:', JSON.stringify(subscriptionData, null, 2));
 
     const response = await fetch('https://api.mercadopago.com/preapproval', {
       method: 'POST',
