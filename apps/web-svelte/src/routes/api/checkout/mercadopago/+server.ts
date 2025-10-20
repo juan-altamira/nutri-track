@@ -48,44 +48,35 @@ export const POST: RequestHandler = async ({ request }) => {
       console.log('[Checkout MP] Usuario nuevo');
     }
 
-    // Crear suscripción (preapproval) en Mercado Pago
-    const subscriptionData = {
-      preapproval_plan_id: env.MERCADOPAGO_PLAN_ID,
-      reason: 'Nutri-Track - Suscripción Mensual',
-      payer_email: userEmail,
-      back_url: 'https://www.nutri-track.pro/subscription/success',
-      external_reference: userId,
-    };
-
-    console.log('[Checkout MP] Creating preapproval with plan:', env.MERCADOPAGO_PLAN_ID);
-    console.log('[Checkout MP] Request body:', JSON.stringify(subscriptionData, null, 2));
-
-    const response = await fetch('https://api.mercadopago.com/preapproval', {
-      method: 'POST',
+    // Obtener el plan para generar la URL de checkout
+    console.log('[Checkout MP] Obteniendo plan:', env.MERCADOPAGO_PLAN_ID);
+    
+    const planResponse = await fetch(`https://api.mercadopago.com/preapproval_plan/${env.MERCADOPAGO_PLAN_ID}`, {
       headers: {
-        'Content-Type': 'application/json',
         'Authorization': `Bearer ${env.MERCADOPAGO_ACCESS_TOKEN}`,
       },
-      body: JSON.stringify(subscriptionData),
     });
 
-    const result = await response.json();
-
-    if (!response.ok) {
-      console.error('[Checkout MP] Error creating preapproval:', result);
-      throw new Error(result.message || 'Error al crear suscripción en Mercado Pago');
+    if (!planResponse.ok) {
+      console.error('[Checkout MP] Error al obtener plan');
+      throw new Error('Error al obtener plan de suscripción');
     }
 
-    console.log('[Checkout MP] Preapproval created:', {
-      id: result.id,
-      status: result.status,
-      init_point: result.init_point,
+    const plan = await planResponse.json();
+    console.log('[Checkout MP] Plan obtenido:', plan.id);
+
+    // Construir URL de checkout con external_reference y email
+    const checkoutUrl = new URL(plan.init_point);
+    checkoutUrl.searchParams.append('external_reference', userId);
+    checkoutUrl.searchParams.append('payer_email', userEmail);
+
+    console.log('[Checkout MP] Checkout URL generada:', checkoutUrl.toString());
+
+    // Retornar URL de checkout
+    return json({
+      checkoutUrl: checkoutUrl.toString(),
+      planId: plan.id,
     });
-
-    // Retornar URL del checkout
-    const checkoutUrl = result.init_point || result.sandbox_init_point;
-
-    return json({ checkoutUrl });
   } catch (err: any) {
     console.error('[Checkout MP] Error:', err);
     return json({ 
