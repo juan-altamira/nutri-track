@@ -55,7 +55,6 @@ export const POST: RequestHandler = async ({ request }) => {
       payer_email: userEmail,
       back_url: 'https://www.nutri-track.pro/subscription/success',
       external_reference: userId,
-      status: 'pending',
     };
 
     console.log('[Checkout MP] Creating preapproval with plan:', env.MERCADOPAGO_PLAN_ID);
