@@ -9,11 +9,17 @@
 		"preview": "vite preview",
 		"prepare": "svelte-kit sync || echo ''",
 		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
-		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch"
+		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
+		"fdc:download": "node scripts/fdc-etl/download-fdc-data.js",
+		"fdc:translate": "node scripts/fdc-etl/add-translations.js",
+		"fdc:migrate": "node scripts/fdc-etl/migrate-to-food.js",
+		"fdc:migrate:dry": "node scripts/fdc-etl/migrate-to-food.js --dry-run",
+		"fdc:all": "npm run fdc:download && npm run fdc:translate && npm run fdc:migrate"
 	},
 	"dependencies": {
 		"@supabase/ssr": "^0.7.0",
 		"@supabase/supabase-js": "^2.50.5",
+		"dotenv": "^16.4.5",
 		"mercadopago": "^2.0.15",
 		"@sveltejs/adapter-auto": "^6.0.0",
 		"@sveltejs/kit": "^2.22.0",
