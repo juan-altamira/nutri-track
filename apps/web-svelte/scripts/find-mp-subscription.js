@@ -21,7 +21,7 @@ async function main() {
   
   // Buscar suscripciones recientes
   const response = await fetch(
-    'https://api.mercadopago.com/preapproval/search?sort=date_created&criteria=desc&limit=50',
+    'https://api.mercadopago.com/preapproval/search?limit=50',
     {
       headers: {
         'Authorization': `Bearer ${MP_ACCESS_TOKEN}`,
