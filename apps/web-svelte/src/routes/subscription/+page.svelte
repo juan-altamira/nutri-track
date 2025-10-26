@@ -86,6 +86,20 @@
 
       subscription = subData;
       console.log('[Subscription] Subscription loaded:', subscription ? 'existe' : 'null');
+      
+      // Pre-seleccionar región basándose en suscripción anterior
+      if (subscription) {
+        const subRegion = (subscription as any).region;
+        const subProvider = (subscription as any).paymentProvider;
+        
+        if (subRegion === 'argentina' || subProvider === 'mercadopago') {
+          selectedRegion = 'argentina';
+          console.log('[Subscription] Región pre-seleccionada: Argentina');
+        } else if (subProvider === 'lemonsqueezy') {
+          selectedRegion = 'international';
+          console.log('[Subscription] Región pre-seleccionada: Internacional');
+        }
+      }
     } catch (err: any) {
       console.error('[Subscription] Load error:', err);
       toasts.error('Error al cargar suscripción');
@@ -285,23 +299,65 @@
             </a>
           {/if}
         {:else if ['cancelled', 'expired'].includes(subscription.status)}
-          <!-- Suscripción cancelada/expirada: crear nueva -->
-          <div class="space-y-3">
+          <!-- Suscripción cancelada/expirada: reactivar -->
+          <div class="space-y-4">
             <div class="p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700 rounded-lg">
               <p class="text-sm text-blue-800 dark:text-blue-200 font-medium mb-2">
                 ℹ️ Información importante
               </p>
               <p class="text-sm text-blue-700 dark:text-blue-300">
-                Al reactivar tu suscripción, <strong>no tendrás período de prueba gratuito</strong> ya que solo está disponible para nuevos usuarios. La facturación comenzará de inmediato al precio de USD 9.90/mes.
+                Al reactivar tu suscripción, <strong>no tendrás período de prueba gratuito</strong> ya que solo está disponible para nuevos usuarios. La facturación comenzará de inmediato.
               </p>
             </div>
-            <button
-              onclick={handleSubscribe}
-              disabled={checkoutLoading}
-              class="inline-block px-6 py-3 rounded-md bg-blue-600 text-white hover:bg-blue-500 disabled:opacity-60 disabled:cursor-not-allowed transition-colors font-semibold"
-            >
-              {checkoutLoading ? 'Cargando...' : 'Reactivar Suscripción →'}
-            </button>
+            
+            <!-- Selector de región para reactivación -->
+            {#if !selectedRegion}
+              <div class="space-y-3">
+                <h3 class="font-semibold text-center">Seleccioná tu región</h3>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <button
+                    onclick={() => selectedRegion = 'argentina'}
+                    class="p-4 border-2 border-gray-200 dark:border-gray-700 rounded-lg hover:border-blue-500 dark:hover:border-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-all"
+                  >
+                    <div class="text-3xl mb-2">🇦🇷</div>
+                    <p class="font-bold mb-1">Argentina</p>
+                    <p class="text-sm text-gray-600 dark:text-gray-400">ARS 9.900/mes</p>
+                  </button>
+                  <button
+                    onclick={() => selectedRegion = 'international'}
+                    class="p-4 border-2 border-gray-200 dark:border-gray-700 rounded-lg hover:border-blue-500 dark:hover:border-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-all"
+                  >
+                    <div class="text-3xl mb-2">🌍</div>
+                    <p class="font-bold mb-1">Internacional</p>
+                    <p class="text-sm text-gray-600 dark:text-gray-400">USD 9.90/mes</p>
+                  </button>
+                </div>
+              </div>
+            {:else}
+              <div class="space-y-3">
+                <div class="flex items-center justify-between p-3 bg-gray-100 dark:bg-gray-700 rounded-lg">
+                  <div>
+                    <p class="text-sm text-gray-600 dark:text-gray-400">Región:</p>
+                    <p class="font-semibold">
+                      {selectedRegion === 'argentina' ? '🇦🇷 Argentina (ARS 9.900/mes)' : '🌍 Internacional (USD 9.90/mes)'}
+                    </p>
+                  </div>
+                  <button
+                    onclick={() => selectedRegion = null}
+                    class="text-sm text-blue-600 dark:text-blue-400 hover:underline"
+                  >
+                    Cambiar
+                  </button>
+                </div>
+                <button
+                  onclick={handleSubscribe}
+                  disabled={checkoutLoading}
+                  class="w-full px-6 py-3 rounded-md bg-blue-600 text-white hover:bg-blue-500 disabled:opacity-60 disabled:cursor-not-allowed transition-colors font-semibold"
+                >
+                  {checkoutLoading ? 'Cargando...' : 'Reactivar Suscripción →'}
+                </button>
+              </div>
+            {/if}
           </div>
         {/if}
       </div>
