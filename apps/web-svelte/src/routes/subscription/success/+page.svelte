@@ -1,12 +1,14 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import { goto } from '$app/navigation';
+  import { page } from '$app/stores';
   import { supabase } from '$lib/supabaseClient';
 
-  let countdown = $state(30); // Aumentar a 30 segundos
+  let countdown = $state(30);
   let checking = $state(true);
   let subscriptionFound = $state(false);
   let attempts = $state(0);
+  let syncAttempted = $state(false);
 
   onMount(() => {
     console.log('[Success] Iniciando verificación de suscripción...');
@@ -26,6 +28,11 @@
 
       const userId = session.user.id;
       console.log('[Success] User ID:', userId);
+
+      // Obtener preapproval_id de la URL (viene de MP)
+      const urlParams = new URLSearchParams(window.location.search);
+      const preapprovalId = urlParams.get('preapproval_id') || urlParams.get('subscription_id');
+      console.log('[Success] Preapproval ID de URL:', preapprovalId);
 
       // Polling: verificar cada 2 segundos si la suscripción existe
       pollInterval = setInterval(async () => {
@@ -52,6 +59,32 @@
             }, 2000);
           } else {
             console.log('[Success] Suscripción aún no existe, esperando...');
+            
+            // FALLBACK: Si después de 5 intentos (10 seg) no hay suscripción,
+            // y tenemos preapproval_id, intentar crear vía API
+            if (attempts === 5 && preapprovalId && !syncAttempted) {
+              syncAttempted = true;
+              console.log('[Success] Webhook no procesó, intentando sync manual...');
+              
+              try {
+                const syncResponse = await fetch('/api/subscription/sync-mp', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ preapprovalId, userId }),
+                });
+                
+                const syncData = await syncResponse.json();
+                
+                if (syncData.success) {
+                  console.log('[Success] ✅ Sync exitoso!', syncData);
+                  // La próxima iteración del polling la encontrará
+                } else {
+                  console.error('[Success] Error en sync:', syncData);
+                }
+              } catch (syncErr) {
+                console.error('[Success] Error al sincronizar:', syncErr);
+              }
+            }
           }
         } catch (err) {
           console.error('[Success] Error al verificar suscripción:', err);

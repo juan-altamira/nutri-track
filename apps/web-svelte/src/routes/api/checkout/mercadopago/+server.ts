@@ -65,10 +65,15 @@ export const POST: RequestHandler = async ({ request }) => {
     const plan = await planResponse.json();
     console.log('[Checkout MP] Plan obtenido:', plan.id);
 
-    // Construir URL de checkout con external_reference y email
+    // Construir URL de checkout con external_reference, email y back_urls
     const checkoutUrl = new URL(plan.init_point);
     checkoutUrl.searchParams.append('external_reference', userId);
     checkoutUrl.searchParams.append('payer_email', userEmail);
+    
+    // Configurar back_urls para redirección después del pago
+    // MP automáticamente agrega preapproval_id a la URL
+    const baseUrl = env.PUBLIC_APP_URL || 'https://www.nutri-track.pro';
+    checkoutUrl.searchParams.append('back_url', `${baseUrl}/subscription/success`);
 
     console.log('[Checkout MP] Checkout URL generada:', checkoutUrl.toString());
 
